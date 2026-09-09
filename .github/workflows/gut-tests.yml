@@ -1,0 +1,75 @@
+name: GUT Unit Tests
+
+# The addon's scenes are saved by a Godot 4.8 build (nodes carry a unique_id), so the 4.7 container the
+# other addons here test in cannot parse them. This downloads the same Godot the Pages workflow uses.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  GODOT_VERSION: 4.8-dev4
+  ADDON: controls
+
+jobs:
+  gut:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}"
+          curl -fsSL -o godot.zip "${base}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}_linux.x86_64" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+
+      - name: Put the addon where the demo project expects it
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "demo/addons/${ADDON}"
+          # Anchored: unanchored, 'demo' would also match scenes/demo/, the demo scene itself.
+          rsync -a --exclude '/.git' --exclude '/.github' --exclude '/demo' \
+                --exclude '/.gitignore' --exclude '/.gitattributes' ./ "demo/addons/${ADDON}/"
+
+      - name: Import project
+        shell: bash
+        run: |
+          set -euo pipefail
+          for _ in 1 2 3 4; do
+            godot --headless --path "$PWD/demo" --import
+          done
+
+      - name: Run tests
+        shell: bash
+        env:
+          GODOT_DISABLE_LEAK_CHECKS: "1"
+        run: |
+          set -euo pipefail
+          mkdir -p demo/test-results
+          godot \
+            --headless \
+            --path "$PWD/demo" \
+            -s addons/gut/gut_cmdln.gd \
+            -gdir=res://addons/controls/tests \
+            -gjunit_xml_file=test-results/gut-junit.xml \
+            -gcompact_mode \
+            -gexit
+
+      - name: Archive test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gut-test-reports
+          path: demo/test-results/
+          if-no-files-found: warn

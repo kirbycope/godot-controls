@@ -1,0 +1,8 @@
+# The addon is the repository root; the demo project takes a copy of it, which is never committed twice.
+# See the README for the one command that fills it in.
+addons/controls/
+
+# Godot's import cache and the web export the Pages workflow builds.
+.godot/
+build/
+.mcp/
