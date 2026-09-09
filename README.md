@@ -1,3 +1,5 @@
+![Preview](./assets/godot-controls.png)
+
 # Controls
 
 On-screen input hints for Godot 4.8. A `CanvasLayer` that shows which button does what, redraws itself in the
