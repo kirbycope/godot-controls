@@ -1,3 +1,5 @@
+![Preview](addons/controls/assets/godot-controls.png)
+
 # Controls for Godot 4.8+
 
 On-screen input hints that follow the player's device, and a world-space `ActionPrompt` for interactable objects.
