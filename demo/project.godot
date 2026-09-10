@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Controls"
-config/version="1.0.0"
+config/version="3.0.1"
 run/main_scene="res://addons/controls/scenes/demo/demo.tscn"
 config/features=PackedStringArray("4.8", "Forward Plus")
 
