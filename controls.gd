@@ -16,6 +16,9 @@ extends CanvasLayer
 
 signal input_type_changed(input_type: InputType) ## The device being played on has changed.
 signal contextual_labels_requested ## A world prompt gave its label back; whatever owns the labels should re-apply them.
+signal screenshot_taken(path: String) ## A screenshot was saved. On the web this is the file name the browser was given.
+
+const SCREENSHOT_DIR: String = "user://screenshots" ## Where [method take_screenshot] saves, off the web.
 
 enum InputType {
 	KEYBOARD_MOUSE,
@@ -44,7 +47,7 @@ const SLOT_EVENTS: Dictionary = {
 	"button_12": {"buttons": [JOY_BUTTON_DPAD_DOWN]},
 	"button_13": {"buttons": [JOY_BUTTON_DPAD_LEFT]},
 	"button_14": {"buttons": [JOY_BUTTON_DPAD_RIGHT]},
-	"button_15": {"buttons": [JOY_BUTTON_MISC1]},
+	"button_15": {"buttons": [JOY_BUTTON_MISC1], "keys": [KEY_PRINT]},
 	"axis_4_plus": {"axes": [[JOY_AXIS_TRIGGER_LEFT, 1.0]]},
 	"axis_5_plus": {"axes": [[JOY_AXIS_TRIGGER_RIGHT, 1.0]]},
 	"move_up": {"keys": [KEY_W], "axes": [[JOY_AXIS_LEFT_Y, -1.0]]},
@@ -58,6 +61,10 @@ const SLOT_EVENTS: Dictionary = {
 }
 
 @export var input_deadzone: float = 0.05 ## Address joystick drift by setting a deadzone threshold for joystick motion inputs
+## Whether the share button saves a PNG of the screen when it is pressed. It is the one button here the HUD
+## acts on itself, because capturing the screen is not something a game has to be asked about; turn it off in a
+## project that captures the screen its own way, or blank [member action_button_15] to drop the button entirely.
+@export var takes_screenshots: bool = true
 
 @export_group("Face Button Actions", "action_")
 @export var action_button_0: StringName = &"ui_accept" ## Bottom face button. Microsoft: Ⓐ, Nintendo: Ⓑ, Sony: ✕
@@ -92,7 +99,9 @@ const SLOT_EVENTS: Dictionary = {
 @export_group("System Button Actions", "action_")
 @export var action_button_4: StringName = &"" ## Microsoft: ⧉, Nintendo: ⊝, Sony: ⦀
 @export var action_button_6: StringName = &"" ## Microsoft: ☰, Nintendo: ⊕, Sony: ☰
-@export var action_button_15: StringName = &"" ## Microsoft: ⧉, Nintendo: ⧇, Sony: Create
+## The share button. Unlike every other slot this one is filled in by default, because the HUD has something
+## to put on it: [method take_screenshot]. Microsoft: ⧉, Nintendo: ⧇, Sony: Create
+@export var action_button_15: StringName = &"take_screenshot"
 
 @export_category("Keyboard and Mouse Textures")
 @export var keyboard_mouse_button_0_normal: Texture2D ## Keyboard [E] key (Normal)
@@ -516,6 +525,8 @@ func _input(event: InputEvent) -> void:
 	# Motion events are never button presses; only press/release events update the pressed visuals
 	if event is InputEventMouseMotion or event is InputEventScreenDrag:
 		return
+	if takes_screenshots and not action_button_15.is_empty() and event.is_action_pressed(action_button_15):
+		take_screenshot()
 	for button: TouchScreenButton in all_buttons:
 		if button.action.is_empty() or not event.is_action(button.action):
 			continue
@@ -625,6 +636,31 @@ func update_input_ui() -> void:
 
 	for item: CanvasItem in _unbound:
 		item.hide()
+
+
+## Saves a PNG of what is on screen and returns where it went, with the HUD itself left out of the picture:
+## a player sharing a screenshot wants the game in it, not the buttons they pressed to get there.
+##
+## Off the web the file lands in [constant SCREENSHOT_DIR]. On the web it cannot: [code]user://[/code] there is
+## a browser storage sandbox with no folder behind it and nothing the player can open, so the bytes are handed
+## to the page as a download instead, which is the one way a browser lets a file reach the machine.
+func take_screenshot() -> String:
+	var hud_was_visible: bool = visible
+	visible = false
+	await RenderingServer.frame_post_draw
+	var image: Image = get_viewport().get_texture().get_image()
+	visible = hud_was_visible
+	# Colons are legal in a path on none of the three desktops, and the browser strips them from a download.
+	var file_name: String = "screenshot_%s.png" % Time.get_datetime_string_from_system().replace(":", "-")
+	if OS.has_feature("web"):
+		JavaScriptBridge.download_buffer(image.save_png_to_buffer(), file_name, "image/png")
+		screenshot_taken.emit(file_name)
+		return file_name
+	DirAccess.make_dir_recursive_absolute(SCREENSHOT_DIR)
+	var path: String = SCREENSHOT_DIR.path_join(file_name)
+	image.save_png(path)
+	screenshot_taken.emit(path)
+	return path
 
 
 ## Rumbles the pad for [param seconds] unless the player is on keyboard/mouse or touch; returns whether it did.
