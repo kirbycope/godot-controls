@@ -132,8 +132,12 @@ moves, which is what a game listens to when its labels differ per device.
 Touch borrows the Xbox art. `rumble(weak, strong, seconds)` rumbles the pad and returns `false` without doing
 anything on keyboard or touch.
 
-The keyboard art is exported too, one texture per state per button, so a project that binds different keys
-than the defaults shows its own. The demo does exactly that.
+The keyboard art is exported too, one texture per state per slot, so a project that binds different keys than
+the defaults shows its own. The demo does exactly that. That covers the whole keyboard set: the face buttons,
+the shoulders and triggers, and also the stick and d-pad keys through `keyboard_mouse_move_*`,
+`keyboard_mouse_look_*` and `keyboard_mouse_button_11` to `14`. Those twelve are never swapped per device,
+because they are only ever shown for keyboard and mouse, and a pair left blank keeps the key face the scene
+already has - so a project on WASD and the arrows sets none of them.
 
 ## The demo scene
 

@@ -4,6 +4,9 @@ extends GutTest
 
 const CONTROLS_SCENE: PackedScene = preload("res://addons/controls/controls.tscn")
 
+## Where the key faces live, for the tests that hand the HUD a different one.
+const KEY_ART: String = "res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector"
+
 ## Action names invented for these tests, removed again in [method after_each] so one test cannot bind another.
 const TEST_ACTIONS: PackedStringArray = [
 	"test_interact", "test_attack", "test_aim", "test_menu", "test_look_up", "test_look_down",
@@ -312,3 +315,40 @@ func test_a_project_that_captures_its_own_way_can_turn_it_off() -> void:
 	_controls._input(press)
 	await wait_frames(3)
 	assert_eq(_screenshot_count(), 0, "The button is still there; the HUD just does not act on it")
+
+
+## The keyboard set's stick and d-pad keys were baked into the scene, so a project binding anything other
+## than WASD and IJKL showed its players the wrong keys with no way to say otherwise. They are exported now,
+## the way the face buttons always were.
+func test_the_stick_and_dpad_keys_take_a_projects_own_key_faces() -> void:
+	var arrow_up: Texture2D = load(KEY_ART.path_join("keyboard_arrow_up_outline.svg"))
+	var arrow_up_pressed: Texture2D = load(KEY_ART.path_join("keyboard_arrow_up.svg"))
+	var controls: Controls = _make_controls({
+		"keyboard_mouse_move_up_normal": arrow_up,
+		"keyboard_mouse_move_up_pressed": arrow_up_pressed,
+		"keyboard_mouse_button_11_normal": arrow_up,
+		"keyboard_mouse_look_left_normal": arrow_up,
+	})
+	assert_eq(controls.key_w.texture_normal, arrow_up, "the left stick's forward key")
+	assert_eq(controls.key_w.texture_pressed, arrow_up_pressed, "and its pressed state")
+	assert_eq(controls.key_i.texture_normal, arrow_up, "the d-pad's up key")
+	assert_eq(controls.key_left.texture_normal, arrow_up, "the right stick's left key")
+
+
+## A project that binds WASD and the arrows like everyone else sets none of them, so a blank export has to
+## leave the scene's own art alone rather than blanking the button.
+func test_a_key_face_left_blank_keeps_the_scenes_own() -> void:
+	var controls: Controls = _make_controls()
+	for button: TouchScreenButton in [controls.key_w, controls.key_a, controls.key_s, controls.key_d,
+			controls.key_i, controls.key_j, controls.key_k, controls.key_l,
+			controls.key_up, controls.key_down, controls.key_left, controls.key_right]:
+		assert_not_null(button.texture_normal, "%s keeps a face" % button.name)
+
+
+## The override has to be in place before the held-state swap caches what "not pressed" looks like, or
+## letting go of a key would put the addon's default art back.
+func test_a_key_face_survives_being_pressed_and_released() -> void:
+	var arrow_up: Texture2D = load(KEY_ART.path_join("keyboard_arrow_up_outline.svg"))
+	var controls: Controls = _make_controls({"keyboard_mouse_move_up_normal": arrow_up})
+	controls.update_input_ui()
+	assert_eq(controls.key_w.texture_normal, arrow_up, "still the project's own after a redraw")

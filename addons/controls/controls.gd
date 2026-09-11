@@ -130,6 +130,33 @@ const SLOT_EVENTS: Dictionary = {
 @export var keyboard_mouse_axis_4_plus_pressed: Texture2D ## Keyboard [Mouse-Left] key (Pressed)
 @export var keyboard_mouse_axis_5_plus_normal: Texture2D ## Keyboard [Mouse-Right] key (Normal)
 @export var keyboard_mouse_axis_5_plus_pressed: Texture2D ## Keyboard [Mouse-Right] key (Pressed)
+## The stick and d-pad halves of the keyboard set. These are never swapped per device - they are only ever
+## shown for keyboard and mouse - so unlike the face buttons they carry no vendor pairs, and anything left
+## blank keeps the key face the scene already has.
+@export var keyboard_mouse_move_up_normal: Texture2D ## Left stick forward, [W] by default (Normal)
+@export var keyboard_mouse_move_up_pressed: Texture2D ## Left stick forward, [W] by default (Pressed)
+@export var keyboard_mouse_move_down_normal: Texture2D ## Left stick back, [S] by default (Normal)
+@export var keyboard_mouse_move_down_pressed: Texture2D ## Left stick back, [S] by default (Pressed)
+@export var keyboard_mouse_move_left_normal: Texture2D ## Left stick left, [A] by default (Normal)
+@export var keyboard_mouse_move_left_pressed: Texture2D ## Left stick left, [A] by default (Pressed)
+@export var keyboard_mouse_move_right_normal: Texture2D ## Left stick right, [D] by default (Normal)
+@export var keyboard_mouse_move_right_pressed: Texture2D ## Left stick right, [D] by default (Pressed)
+@export var keyboard_mouse_button_11_normal: Texture2D ## D-pad up, [I] by default (Normal)
+@export var keyboard_mouse_button_11_pressed: Texture2D ## D-pad up, [I] by default (Pressed)
+@export var keyboard_mouse_button_12_normal: Texture2D ## D-pad down, [K] by default (Normal)
+@export var keyboard_mouse_button_12_pressed: Texture2D ## D-pad down, [K] by default (Pressed)
+@export var keyboard_mouse_button_13_normal: Texture2D ## D-pad left, [J] by default (Normal)
+@export var keyboard_mouse_button_13_pressed: Texture2D ## D-pad left, [J] by default (Pressed)
+@export var keyboard_mouse_button_14_normal: Texture2D ## D-pad right, [L] by default (Normal)
+@export var keyboard_mouse_button_14_pressed: Texture2D ## D-pad right, [L] by default (Pressed)
+@export var keyboard_mouse_look_up_normal: Texture2D ## Right stick up, [Up] by default (Normal)
+@export var keyboard_mouse_look_up_pressed: Texture2D ## Right stick up, [Up] by default (Pressed)
+@export var keyboard_mouse_look_down_normal: Texture2D ## Right stick down, [Down] by default (Normal)
+@export var keyboard_mouse_look_down_pressed: Texture2D ## Right stick down, [Down] by default (Pressed)
+@export var keyboard_mouse_look_left_normal: Texture2D ## Right stick left, [Left] by default (Normal)
+@export var keyboard_mouse_look_left_pressed: Texture2D ## Right stick left, [Left] by default (Pressed)
+@export var keyboard_mouse_look_right_normal: Texture2D ## Right stick right, [Right] by default (Normal)
+@export var keyboard_mouse_look_right_pressed: Texture2D ## Right stick right, [Right] by default (Pressed)
 @export_category("Microsoft Textures")
 @export var microsoft_button_0_normal: Texture2D ## XBox A (Normal)
 @export var microsoft_button_0_pressed: Texture2D ## XBox A (Pressed)
@@ -371,6 +398,10 @@ func _ready() -> void:
 	set_physics_process(is_multiplayer_authority())
 	set_process_input(is_multiplayer_authority())
 
+	# A project's own key faces go on before anything is cached, so everything downstream - the held-state
+	# swap and update_input_ui - sees them as though the scene had always had them.
+	_apply_keyboard_textures()
+
 	# Cache the initial normal textures and label texts
 	for button: TouchScreenButton in all_buttons:
 		_normal_textures[button] = button.texture_normal
@@ -386,6 +417,37 @@ func _ready() -> void:
 	register_actions(extra_actions)
 	_register_slot_actions()
 	update_input_ui()
+
+
+## The key face for each button of the keyboard set that is not a face button, as the exports have it.
+## Keyed by the button itself, because the d-pad slots stand for two buttons each and only the keyboard one
+## is a key.
+func _keyboard_key_textures() -> Dictionary:
+	return {
+		key_w: [keyboard_mouse_move_up_normal, keyboard_mouse_move_up_pressed],
+		key_s: [keyboard_mouse_move_down_normal, keyboard_mouse_move_down_pressed],
+		key_a: [keyboard_mouse_move_left_normal, keyboard_mouse_move_left_pressed],
+		key_d: [keyboard_mouse_move_right_normal, keyboard_mouse_move_right_pressed],
+		key_i: [keyboard_mouse_button_11_normal, keyboard_mouse_button_11_pressed],
+		key_k: [keyboard_mouse_button_12_normal, keyboard_mouse_button_12_pressed],
+		key_j: [keyboard_mouse_button_13_normal, keyboard_mouse_button_13_pressed],
+		key_l: [keyboard_mouse_button_14_normal, keyboard_mouse_button_14_pressed],
+		key_up: [keyboard_mouse_look_up_normal, keyboard_mouse_look_up_pressed],
+		key_down: [keyboard_mouse_look_down_normal, keyboard_mouse_look_down_pressed],
+		key_left: [keyboard_mouse_look_left_normal, keyboard_mouse_look_left_pressed],
+		key_right: [keyboard_mouse_look_right_normal, keyboard_mouse_look_right_pressed],
+	}
+
+
+## Puts a project's own key faces on the stick and d-pad keys. A pair left blank keeps the scene's art, so a
+## project that binds WASD and the arrows like everyone else sets none of them.
+func _apply_keyboard_textures() -> void:
+	for button: TouchScreenButton in _keyboard_key_textures():
+		var pair: Array = _keyboard_key_textures()[button]
+		if pair[0] != null:
+			button.texture_normal = pair[0]
+		if pair[1] != null:
+			button.texture_pressed = pair[1]
 
 
 ## Every slot's action name, in [constant SLOT_EVENTS] order, as the exports currently have it.
