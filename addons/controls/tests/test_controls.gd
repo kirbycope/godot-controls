@@ -135,6 +135,22 @@ func test_a_project_action_is_left_alone() -> void:
 	assert_true(InputMap.action_has_event("test_attack", key_event), "and it is untouched")
 
 
+## The View, pause and Screenshot slots draw an F5, an Escape and a Print Screen key, so those are the keys
+## the addon has to register for them. A key face that names a key the slot does not answer to is a lie.
+func test_the_system_slots_bind_the_keys_their_faces_show() -> void:
+	_controls = _make_controls({
+		"action_button_4": &"test_view",
+		"action_button_6": &"test_pause",
+		"action_button_15": &"test_shot",
+	})
+
+	for pair: Array in [["test_view", KEY_F5], ["test_pause", KEY_ESCAPE], ["test_shot", KEY_PRINT]]:
+		var key_event: InputEventKey = InputEventKey.new()
+		key_event.physical_keycode = pair[1]
+		assert_true(InputMap.action_has_event(pair[0], key_event),
+			"%s answers to %s" % [pair[0], OS.get_keycode_string(pair[1])])
+
+
 ## Godot's own ui_* actions are the exception: they are extended rather than skipped, so the on-screen
 ## d-pad works even though the engine declared the action first.
 func test_builtin_ui_actions_are_extended() -> void:
@@ -150,10 +166,55 @@ func test_keyboard_and_joypad_sets_swap() -> void:
 	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
 	assert_true(_controls.key_w.visible, "On keyboard the letter keys show")
 	assert_false(_controls.left_joystick.visible, "and the sticks do not")
+	assert_false(_controls.dpad_base.visible, "nor the cross the d-pad buttons sit on")
 
 	_controls.current_input_type = Controls.InputType.SONY
 	assert_false(_controls.key_w.visible, "On a pad the letter keys go away")
 	assert_true(_controls.left_joystick.visible, "and the sticks come back")
+	assert_true(_controls.dpad_base.visible, "and so does the d-pad cross")
+
+
+## A click is the only signal a mouse player gives on a HUD that starts out showing touch controls, so it has
+## to count on its own rather than only while the mouse is captured.
+func test_a_mouse_click_swaps_to_the_keyboard_set() -> void:
+	_controls = _make_controls()
+	_controls.current_input_type = Controls.InputType.TOUCH
+
+	var click: InputEventMouseButton = InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	_controls._input(click)
+
+	assert_eq(_controls.current_input_type, Controls.InputType.KEYBOARD_MOUSE, "A click is someone at a mouse")
+	assert_true(_controls.key_w.visible, "so the letter keys show")
+	assert_false(_controls.left_joystick.visible, "and the touch sticks go away")
+
+
+## A touchscreen sends mouse events of its own where the project emulates them, marked with
+## DEVICE_ID_EMULATION. Taking those for a mouse would drop the touch controls the moment they were used.
+func test_a_touch_emulated_click_stays_on_touch() -> void:
+	_controls = _make_controls()
+	_controls.current_input_type = Controls.InputType.TOUCH
+
+	var emulated: InputEventMouseButton = InputEventMouseButton.new()
+	emulated.device = InputEvent.DEVICE_ID_EMULATION
+	emulated.button_index = MOUSE_BUTTON_LEFT
+	emulated.pressed = true
+	_controls._input(emulated)
+
+	assert_eq(_controls.current_input_type, Controls.InputType.TOUCH, "An emulated click is a finger, not a mouse")
+
+
+## Mouse motion still needs the mouse captured, so a knock of the desk does not take a pad player's HUD away.
+func test_free_mouse_motion_leaves_a_pad_player_alone() -> void:
+	_controls = _make_controls()
+	_controls.current_input_type = Controls.InputType.MICROSOFT
+
+	var motion: InputEventMouseMotion = InputEventMouseMotion.new()
+	motion.relative = Vector2(4, 4)
+	_controls._input(motion)
+
+	assert_eq(_controls.current_input_type, Controls.InputType.MICROSOFT, "The pad HUD stays put")
 
 
 func test_input_type_change_swaps_the_button_art() -> void:

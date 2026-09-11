@@ -38,8 +38,8 @@ const SLOT_EVENTS: Dictionary = {
 	"button_1": {"buttons": [JOY_BUTTON_B]},
 	"button_2": {"buttons": [JOY_BUTTON_X]},
 	"button_3": {"buttons": [JOY_BUTTON_Y]},
-	"button_4": {"buttons": [JOY_BUTTON_BACK]},
-	"button_6": {"buttons": [JOY_BUTTON_START]},
+	"button_4": {"buttons": [JOY_BUTTON_BACK], "keys": [KEY_F5]},
+	"button_6": {"buttons": [JOY_BUTTON_START], "keys": [KEY_ESCAPE]},
 	"button_7": {"buttons": [JOY_BUTTON_LEFT_STICK]},
 	"button_8": {"buttons": [JOY_BUTTON_RIGHT_STICK]},
 	"button_9": {"buttons": [JOY_BUTTON_LEFT_SHOULDER]},
@@ -260,6 +260,7 @@ var extra_actions: Dictionary = {}
 ## refresh. [method ActionPrompt.show_for] claims it and [method ActionPrompt.hide_for] gives it back.
 var prompt_action_label: String = ""
 
+@onready var dpad_base: TextureRect = $BottomLeft/DPadBase ## The d-pad cross the joypad d-pad buttons sit on
 @onready var joypad_button_0: TouchScreenButton = $BottomRight/JoypadButton0 ## Joypad Button 0 (Bottom Action, Sony Cross, XBox A, Nintendo B)
 @onready var joypad_button_0_label: Label = $BottomRight/JoypadButton0/Label
 @onready var joypad_button_1: TouchScreenButton = $BottomRight/JoypadButton1 ## Joypad Button 1 (Right Action, Sony Circle, XBox B, Nintendo A)
@@ -385,7 +386,7 @@ var prompt_action_label: String = ""
 	],
 }
 ## Controls shown only for controller/touch input (the keyboard set is shown instead for keyboard/mouse).
-@onready var _joypad_only: Array[CanvasItem] = [joypad_button_11, joypad_button_12, joypad_button_13, joypad_button_14, left_joystick, right_joystick]
+@onready var _joypad_only: Array[CanvasItem] = [dpad_base, joypad_button_11, joypad_button_12, joypad_button_13, joypad_button_14, left_joystick, right_joystick]
 @onready var _keyboard_only: Array[CanvasItem] = [key_w, key_a, key_s, key_d, key_i, key_j, key_k, key_l, key_up, key_left, key_down, key_right]
 
 var current_input_type: InputType = InputType.TOUCH:
@@ -593,9 +594,14 @@ func _events_for(binding: Dictionary) -> Array[InputEvent]:
 
 ## Called when there is an input event.
 func _input(event: InputEvent) -> void:
-	# Detect the input device from the event
-	if event is InputEventKey or (event is InputEventMouse and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED):
+	# Detect the input device from the event. A click is always someone at a mouse, but motion only counts
+	# while the mouse is captured, so nudging the desk does not take a pad player's HUD away. A touchscreen
+	# sends mouse events too where the project emulates them, and those carry DEVICE_ID_EMULATION.
+	if event is InputEventKey:
 		current_input_type = InputType.KEYBOARD_MOUSE
+	elif event is InputEventMouse and event.device != InputEvent.DEVICE_ID_EMULATION:
+		if event is InputEventMouseButton or Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+			current_input_type = InputType.KEYBOARD_MOUSE
 	elif event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > input_deadzone):
 		var joystick_name: String = Input.get_joy_name(event.device).to_lower()
 		# Microsoft [XBox], Nintendo [Switch], or Sony [PlayStation] controller

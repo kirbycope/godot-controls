@@ -50,7 +50,8 @@ Every slot on the HUD is an exported action name, grouped in the inspector by wh
 
 The defaults are Godot's own actions wherever the engine already binds that physical button, so a project that
 has never defined an action of its own still gets a working HUD: the face buttons drive accept, cancel and
-select, and the d-pad, the left stick and WASD drive the four directions.
+select, and the d-pad, the left stick and WASD drive the four directions. A slot the engine does not bind but
+the key face names still gets that key: `F5` for View, `Esc` for the pause button and `PrtScn` for Screenshot.
 
 Two rules follow from that table.
 
@@ -139,6 +140,12 @@ Naming a joypad label gets the key that does the same job for free: the d-pad's 
 keeps that name through every refresh until `hide_for` gives it back. Only the prompt that claimed the label
 can release it, so walking out of one prompt while standing in another leaves the other's label alone.
 
+The prompt reads `message_begin`, the button art, `message_end`, and it spaces those three from the width of
+the text rather than from fixed positions: each label is measured, a `glyph_gap` is left either side of the
+art, and the row is centred on the node. So "Hit / to pry the lid off the crate" reads as evenly as
+"Press / to open", and a side left blank takes its gap with it. The X of all three is the script's to set, so
+moving them in the scene does nothing - change the wording, `glyph_gap`, or the node itself.
+
 ## Devices
 
 `current_input_type` follows whatever was last used and drives everything: the art on each face button,
@@ -160,7 +167,7 @@ already has - so a project on WASD and the arrows sets none of them.
 
 `scenes/demo/demo.tscn` is a crate with a prompt on it and the HUD mapped to `demo_*` actions that appear
 nowhere in `project.godot`, next to a d-pad and left stick left at their Godot defaults, so you can see both
-halves at once. Press anything and the button lights up and the readout names the action. `M` swaps the labels
+halves at once. Press anything and the button lights up and the readout names the action. `Esc` swaps the labels
 for a menu's worth and back.
 
 It is the main scene of the demo project this addon is developed in, and installing the addon brings it, so

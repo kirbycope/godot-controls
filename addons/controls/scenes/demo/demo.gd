@@ -22,9 +22,9 @@ const KEYBOARD_BINDINGS: Dictionary = {
 	"demo_throw": {"keys": [KEY_T]},
 	"demo_aim": {"mouse": [MOUSE_BUTTON_RIGHT]},
 	"demo_shoot": {"mouse": [MOUSE_BUTTON_LEFT]},
-	"demo_view": {"keys": [KEY_V]},
-	"demo_screenshot": {"keys": [KEY_P]},
-	"demo_menu": {"keys": [KEY_M]},
+	"demo_view": {"keys": [KEY_F5]},
+	"demo_screenshot": {"keys": [KEY_PRINT]},
+	"demo_menu": {"keys": [KEY_ESCAPE]},
 }
 
 ## The actions the readout watches, paired with what to call them.

@@ -1,16 +1,10 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://addons/controls/scenes/demo/demo.gd" id="1_demo"]
 [ext_resource type="PackedScene" uid="uid://carag3s40qlej" path="res://addons/controls/controls.tscn" id="2_controls"]
 [ext_resource type="PackedScene" uid="uid://dokp6v1sufknx" path="res://addons/controls/action_prompt.tscn" id="3_prompt"]
 [ext_resource type="Texture2D" uid="uid://dtsqhh360ipp5" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_f_outline.svg" id="4_f_out"]
 [ext_resource type="Texture2D" uid="uid://0a0by6ehbtty" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_f.svg" id="5_f"]
-[ext_resource type="Texture2D" uid="uid://cvt17lnd0gda0" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_v_outline.svg" id="6_v_out"]
-[ext_resource type="Texture2D" uid="uid://d4dgtlvjluy46" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_v.svg" id="7_v"]
-[ext_resource type="Texture2D" uid="uid://crilp1gwk0glf" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_m_outline.svg" id="8_m_out"]
-[ext_resource type="Texture2D" uid="uid://vh6uqc5vw6fp" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_m.svg" id="9_m"]
-[ext_resource type="Texture2D" uid="uid://chdh8hb0ru1r0" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_p_outline.svg" id="10_p_out"]
-[ext_resource type="Texture2D" uid="uid://cwkbwhvgwoe4e" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_p.svg" id="11_p"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_demo"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -83,7 +77,7 @@ horizontal_alignment = 1
 
 [node name="HintLabel" type="Label" parent="Readout/Panel/Rows"]
 layout_mode = 2
-text = "[M] or Menu swaps the labels"
+text = "[Esc] or Menu swaps the labels"
 horizontal_alignment = 1
 
 [node name="Controls" parent="." instance=ExtResource("2_controls")]
@@ -106,9 +100,3 @@ action_look_left = &"demo_look_left"
 action_look_right = &"demo_look_right"
 keyboard_mouse_button_2_normal = ExtResource("4_f_out")
 keyboard_mouse_button_2_pressed = ExtResource("5_f")
-keyboard_mouse_button_4_normal = ExtResource("6_v_out")
-keyboard_mouse_button_4_pressed = ExtResource("7_v")
-keyboard_mouse_button_6_normal = ExtResource("8_m_out")
-keyboard_mouse_button_6_pressed = ExtResource("9_m")
-keyboard_mouse_button_15_normal = ExtResource("10_p_out")
-keyboard_mouse_button_15_pressed = ExtResource("11_p")

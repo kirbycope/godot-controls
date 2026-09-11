@@ -52,58 +52,58 @@ script = ExtResource("1_jm0tu")
 [node name="KeyboardMouse" type="Node3D" parent="." unique_id=493299127]
 
 [node name="Label3D" type="Label3D" parent="KeyboardMouse" unique_id=45750300]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 text = "Press"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="KeyboardMouse" unique_id=1293126463]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11877992, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("QuadMesh_jm0tu")
 
 [node name="Label3D2" type="Label3D" parent="KeyboardMouse" unique_id=1464238490]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 text = "to interact"
 
 [node name="Microsoft" type="Node3D" parent="." unique_id=353128926]
 visible = false
 
 [node name="Label3D" type="Label3D" parent="Microsoft" unique_id=526885666]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 text = "Press"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Microsoft" unique_id=1642201871]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11877992, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("QuadMesh_senyo")
 
 [node name="Label3D2" type="Label3D" parent="Microsoft" unique_id=63000026]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.43, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 text = "to interact"
 
 [node name="Nintendo" type="Node3D" parent="." unique_id=971837950]
 visible = false
 
 [node name="Label3D" type="Label3D" parent="Nintendo" unique_id=213424988]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 text = "Press"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Nintendo" unique_id=1587991156]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11877992, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("QuadMesh_nwovy")
 
 [node name="Label3D2" type="Label3D" parent="Nintendo" unique_id=1265928872]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.43, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 text = "to interact"
 
 [node name="Sony" type="Node3D" parent="." unique_id=1209264919]
 visible = false
 
 [node name="Label3D" type="Label3D" parent="Sony" unique_id=2062385778]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 text = "Press"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Sony" unique_id=1119927699]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11877992, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("QuadMesh_187ag")
 
 [node name="Label3D2" type="Label3D" parent="Sony" unique_id=382439694]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.43, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 text = "to interact"

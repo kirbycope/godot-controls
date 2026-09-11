@@ -309,7 +309,6 @@ offset_right = 320.0
 grow_vertical = 0
 
 [node name="DPadBase" type="TextureRect" parent="BottomLeft" unique_id=861224565]
-visible = false
 layout_mode = 0
 offset_left = 192.0
 offset_top = 184.0
@@ -326,16 +325,20 @@ texture_pressed = ExtResource("53_1mwrh")
 shape = SubResource("ConvexPolygonShape2D_rs4nb")
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton11" unique_id=724217657]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -13.0
-offset_top = -5.5
-offset_right = 40.0
-offset_bottom = 17.5
+offset_left = -24.0
+offset_top = -18.0
+offset_right = 72.0
+offset_bottom = 31.0
 grow_horizontal = 2
 scale = Vector2(0.5, 0.5)
 text = "Up"
+horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3
 
 [node name="JoypadButton12" type="TouchScreenButton" parent="BottomLeft" unique_id=1173119804]
 position = Vector2(192, 184)
@@ -345,16 +348,19 @@ texture_pressed = ExtResource("54_uepbl")
 shape = SubResource("ConvexPolygonShape2D_kwisa")
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton12" unique_id=1859234343]
+custom_maximum_size = Vector2(96, -1)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -14.5
+offset_left = -24.0
 offset_top = 56.5
-offset_right = 43.5
+offset_right = 72.0
 offset_bottom = 79.5
 grow_horizontal = 2
 scale = Vector2(0.5, 0.5)
 text = "Down"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="JoypadButton13" type="TouchScreenButton" parent="BottomLeft" unique_id=1212613253]
 position = Vector2(192, 184)
@@ -364,19 +370,21 @@ texture_pressed = ExtResource("55_8gkmr")
 shape = SubResource("ConvexPolygonShape2D_qrmb0")
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton13" unique_id=222978466]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = -28.0
+offset_left = -41.5
 offset_top = -12.0
-offset_right = 36.0
+offset_right = 54.5
 offset_bottom = 37.0
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
 text = "Left"
 label_settings = SubResource("LabelSettings_xf6l6")
-horizontal_alignment = 1
+horizontal_alignment = 2
 vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="JoypadButton14" type="TouchScreenButton" parent="BottomLeft" unique_id=506483572]
 position = Vector2(192, 184)
@@ -386,19 +394,20 @@ texture_pressed = ExtResource("56_t8hsd")
 shape = SubResource("ConvexPolygonShape2D_wwnia")
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton14" unique_id=1667560914]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = 60.0
+offset_left = 58.0
 offset_top = -12.0
-offset_right = 124.0
+offset_right = 154.0
 offset_bottom = 37.0
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
 text = "Right"
 label_settings = SubResource("LabelSettings_xf6l6")
-horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="JoypadButton7" type="TouchScreenButton" parent="BottomLeft" unique_id=417297691]
 position = Vector2(0, 256)
@@ -407,14 +416,14 @@ texture_pressed = ExtResource("58_tnbvb")
 shape = SubResource("CircleShape2D_rs4nb")
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton7" unique_id=433012390]
-custom_maximum_size = Vector2(56, 49)
+custom_maximum_size = Vector2(56, 56)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -28.0
-offset_top = -40.0
+offset_top = -48.0
 offset_right = 28.0
-offset_bottom = 9.0
+offset_bottom = 8.0
 grow_horizontal = 2
 text = "Crouch"
 horizontal_alignment = 1
@@ -445,20 +454,22 @@ theme_override_styles/normal_tip = SubResource("StyleBoxFlat_xf6l6")
 theme_override_styles/pressed_tip = SubResource("StyleBoxFlat_rs4nb")
 
 [node name="Label" type="Label" parent="BottomLeft/LeftJoystick" unique_id=1413698108]
+custom_maximum_size = Vector2(96, 49)
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -21.5
-offset_top = 17.0
-offset_right = 21.5
-offset_bottom = 40.0
+offset_left = -48.0
+offset_top = 13.0
+offset_right = 48.0
+offset_bottom = 62.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Move"
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="KeyW" type="TouchScreenButton" parent="BottomLeft" unique_id=227719598]
 visible = false
@@ -468,19 +479,22 @@ texture_pressed = ExtResource("61_1p6a3")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomLeft/KeyW" unique_id=1116212167]
-visible = false
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -21.5
-offset_top = -79.0
-offset_right = 21.5
-offset_bottom = -56.0
+offset_left = -48.0
+offset_top = -108.0
+offset_right = 48.0
+offset_bottom = -59.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Move"
+horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3
 
 [node name="KeyA" type="TouchScreenButton" parent="BottomLeft" unique_id=1852721401]
 visible = false
@@ -490,16 +504,19 @@ texture_pressed = ExtResource("63_10i3g")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomLeft/KeyA" unique_id=1788475514]
-visible = false
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = -37.0
-offset_top = -11.5
-offset_right = 6.0
-offset_bottom = 11.5
+offset_left = -91.0
+offset_top = -24.5
+offset_right = 5.0
+offset_bottom = 24.5
 grow_vertical = 2
 text = "Move"
+horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="KeyS" type="TouchScreenButton" parent="BottomLeft" unique_id=697488247]
 visible = false
@@ -509,18 +526,21 @@ texture_pressed = ExtResource("65_tqkpd")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomLeft/KeyS" unique_id=1378395330]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -21.5
-offset_top = -8.0
-offset_right = 21.5
-offset_bottom = 15.0
+offset_left = -48.0
+offset_top = -9.0
+offset_right = 48.0
+offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Move"
+horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="KeyD" type="TouchScreenButton" parent="BottomLeft" unique_id=992157285]
 visible = false
@@ -530,19 +550,21 @@ texture_pressed = ExtResource("67_kc587")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomLeft/KeyD" unique_id=864247759]
-visible = false
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -6.0
-offset_top = -11.5
-offset_right = 37.0
-offset_bottom = 11.5
+offset_left = -5.0
+offset_top = -24.5
+offset_right = 91.0
+offset_bottom = 24.5
 grow_horizontal = 0
 grow_vertical = 2
 text = "Move"
+vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="KeyI" type="TouchScreenButton" parent="BottomLeft" unique_id=392059391]
 visible = false
@@ -552,15 +574,19 @@ texture_pressed = ExtResource("69_c88j6")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomLeft/KeyI" unique_id=1517276430]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -26.0
-offset_top = -18.5
-offset_right = 27.0
-offset_bottom = 4.5
+offset_left = -47.5
+offset_top = -41.5
+offset_right = 48.5
+offset_bottom = 7.5
 grow_horizontal = 2
 text = "Up"
+horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3
 
 [node name="KeyJ" type="TouchScreenButton" parent="BottomLeft" unique_id=2142722128]
 visible = false
@@ -570,18 +596,20 @@ texture_pressed = ExtResource("71_fqvfc")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomLeft/KeyJ" unique_id=1359570107]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = -66.0
+offset_left = -91.0
 offset_top = -24.0
-offset_right = -2.0
+offset_right = 5.0
 offset_bottom = 25.0
 grow_vertical = 2
 text = "Left"
 label_settings = SubResource("LabelSettings_xf6l6")
-horizontal_alignment = 1
+horizontal_alignment = 2
 vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="KeyK" type="TouchScreenButton" parent="BottomLeft" unique_id=711519297]
 visible = false
@@ -594,12 +622,13 @@ shape = SubResource("RectangleShape2D_sp4yc")
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -28.5
+offset_left = -47.5
 offset_top = 57.5
-offset_right = 29.5
+offset_right = 48.5
 offset_bottom = 80.5
 grow_horizontal = 2
 text = "Down"
+horizontal_alignment = 1
 
 [node name="KeyL" type="TouchScreenButton" parent="BottomLeft" unique_id=215858380]
 visible = false
@@ -609,18 +638,19 @@ texture_pressed = ExtResource("75_msk0v")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomLeft/KeyL" unique_id=1224760024]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = 64.0
+offset_left = 59.0
 offset_top = -24.0
-offset_right = 128.0
+offset_right = 155.0
 offset_bottom = 25.0
 grow_vertical = 2
 text = "Right"
 label_settings = SubResource("LabelSettings_xf6l6")
-horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="BottomRight" type="Control" parent="." unique_id=945907988]
 layout_mode = 3
@@ -642,16 +672,19 @@ shape = SubResource("CircleShape2D_wwnia")
 passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/JoypadButton0" unique_id=926264414]
+custom_maximum_size = Vector2(56, 56)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -20.5
-offset_top = -16.0
-offset_right = 20.5
-offset_bottom = 7.0
+offset_left = -28.0
+offset_top = -48.0
+offset_right = 28.0
+offset_bottom = 8.0
 grow_horizontal = 2
 text = "Action"
 horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3
 metadata/_edit_use_anchors_ = true
 
 [node name="JoypadButton1" type="TouchScreenButton" parent="BottomRight" unique_id=872941844]
@@ -662,14 +695,14 @@ shape = SubResource("CircleShape2D_qrmb0")
 passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/JoypadButton1" unique_id=2121727848]
-custom_maximum_size = Vector2(47, 49)
+custom_maximum_size = Vector2(56, 56)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -23.5
-offset_top = -43.0
-offset_right = 23.5
-offset_bottom = 6.0
+offset_left = -28.0
+offset_top = -48.0
+offset_right = 28.0
+offset_bottom = 8.0
 grow_horizontal = 2
 text = "Sprint"
 horizontal_alignment = 1
@@ -685,14 +718,14 @@ shape = SubResource("CircleShape2D_wwnia")
 passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/JoypadButton2" unique_id=924171933]
-custom_maximum_size = Vector2(50, 49)
+custom_maximum_size = Vector2(56, 56)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -25.0
 offset_top = -42.0
 offset_right = 25.0
-offset_bottom = 7.0
+offset_bottom = 8.0
 grow_horizontal = 2
 text = "Attack"
 horizontal_alignment = 1
@@ -708,16 +741,19 @@ shape = SubResource("CircleShape2D_xf6l6")
 passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/JoypadButton3" unique_id=1496174418]
+custom_maximum_size = Vector2(56, 56)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -20.5
-offset_top = -16.0
-offset_right = 20.5
-offset_bottom = 7.0
+offset_left = -28.0
+offset_top = -48.0
+offset_right = 28.0
+offset_bottom = 8.0
 grow_horizontal = 2
 text = "Jump"
 horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3
 metadata/_edit_use_anchors_ = true
 
 [node name="JoypadButton8" type="TouchScreenButton" parent="BottomRight" unique_id=1690559978]
@@ -727,14 +763,14 @@ texture_pressed = ExtResource("77_iikrr")
 shape = SubResource("CircleShape2D_rs4nb")
 
 [node name="Label" type="Label" parent="BottomRight/JoypadButton8" unique_id=1914557801]
-custom_maximum_size = Vector2(46, 49)
+custom_maximum_size = Vector2(56, 56)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -23.0
-offset_top = -40.0
-offset_right = 23.0
-offset_bottom = 9.0
+offset_left = -28.0
+offset_top = -48.0
+offset_right = 28.0
+offset_bottom = 8.0
 grow_horizontal = 2
 text = "Zoom"
 horizontal_alignment = 1
@@ -761,20 +797,22 @@ theme_override_styles/normal_tip = SubResource("StyleBoxFlat_xf6l6")
 theme_override_styles/pressed_tip = SubResource("StyleBoxFlat_rs4nb")
 
 [node name="Label" type="Label" parent="BottomRight/RightJoystick" unique_id=469915080]
+custom_maximum_size = Vector2(96, 49)
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -30.5
-offset_top = 17.0
-offset_right = 30.5
-offset_bottom = 40.0
+offset_left = -48.0
+offset_top = 13.0
+offset_right = 48.0
+offset_bottom = 62.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Camera"
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="KeyUp" type="TouchScreenButton" parent="BottomRight" unique_id=194875519]
 visible = false
@@ -784,19 +822,22 @@ texture_pressed = ExtResource("79_7odnn")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomRight/KeyUp" unique_id=1644234347]
-visible = false
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -30.5
-offset_top = -79.0
-offset_right = 30.5
+offset_left = -48.0
+offset_top = -105.0
+offset_right = 48.0
 offset_bottom = -56.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Camera"
+horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3
 
 [node name="KeyLeft" type="TouchScreenButton" parent="BottomRight" unique_id=1057431227]
 visible = false
@@ -806,19 +847,19 @@ texture_pressed = ExtResource("81_k80tt")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomRight/KeyLeft" unique_id=156485861]
-visible = false
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -88.5
-offset_top = -44.0
-offset_right = -27.5
-offset_bottom = -21.0
-grow_horizontal = 2
-grow_vertical = 0
+custom_maximum_size = Vector2(96, 49)
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -91.0
+offset_top = -24.5
+offset_right = 5.0
+offset_bottom = 24.5
+grow_vertical = 2
 text = "Camera"
+horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="KeyDown" type="TouchScreenButton" parent="BottomRight" unique_id=10944827]
 visible = false
@@ -828,18 +869,20 @@ texture_pressed = ExtResource("83_ay47k")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomRight/KeyDown" unique_id=842180098]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -30.5
+offset_left = -48.0
 offset_top = -8.0
-offset_right = 30.5
-offset_bottom = 15.0
+offset_right = 48.0
+offset_bottom = 41.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Camera"
+horizontal_alignment = 1
 
 [node name="KeyRight" type="TouchScreenButton" parent="BottomRight" unique_id=1891117815]
 visible = false
@@ -849,19 +892,20 @@ texture_pressed = ExtResource("85_osf25")
 shape = SubResource("RectangleShape2D_sp4yc")
 
 [node name="Label" type="Label" parent="BottomRight/KeyRight" unique_id=1670398670]
-visible = false
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = 27.5
-offset_top = -44.0
-offset_right = 88.5
-offset_bottom = -21.0
-grow_horizontal = 2
-grow_vertical = 0
+custom_maximum_size = Vector2(96, 49)
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -5.0
+offset_top = -24.5
+offset_right = 91.0
+offset_bottom = 24.5
+grow_horizontal = 0
+grow_vertical = 2
 text = "Camera"
+vertical_alignment = 1
 
 [node name="TopLeft" type="Control" parent="." unique_id=1772685832]
 layout_mode = 3
@@ -876,18 +920,21 @@ shape = SubResource("CircleShape2D_rs4nb")
 passby_press = true
 
 [node name="Label" type="Label" parent="TopLeft/JoypadButton9" unique_id=1394231043]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = 2.0
-offset_top = -11.5
-offset_right = 89.0
-offset_bottom = 11.5
+offset_left = -5.0
+offset_top = -24.5
+offset_right = 91.0
+offset_bottom = 24.5
 grow_horizontal = 0
 grow_vertical = 2
 text = "Ability"
+vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="JoypadAxis4Plus" type="TouchScreenButton" parent="TopLeft" unique_id=1424345727]
 position = Vector2(0, 64)
@@ -897,18 +944,20 @@ shape = SubResource("CircleShape2D_rs4nb")
 passby_press = true
 
 [node name="Label" type="Label" parent="TopLeft/JoypadAxis4Plus" unique_id=88848650]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = 7.0
-offset_top = -11.5
-offset_right = 94.0
-offset_bottom = 11.5
+offset_left = -5.0
+offset_top = -24.5
+offset_right = 91.0
+offset_bottom = 24.5
 grow_horizontal = 0
 grow_vertical = 2
 text = "Aim"
+vertical_alignment = 1
 
 [node name="TopCenter" type="Control" parent="." unique_id=2024208215]
 layout_mode = 3
@@ -926,15 +975,19 @@ texture_pressed = ExtResource("91_d88iv")
 shape = SubResource("CircleShape2D_rs4nb")
 
 [node name="Label" type="Label" parent="TopCenter/JoypadButton4" unique_id=576494979]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = -90.0
-offset_top = -11.5
-offset_bottom = 11.5
+offset_left = -91.0
+offset_top = -24.5
+offset_right = 5.0
+offset_bottom = 24.5
 grow_vertical = 2
 text = "View"
 horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="JoypadButton15" type="TouchScreenButton" parent="TopCenter" unique_id=722696144]
 position = Vector2(64, 0)
@@ -948,10 +1001,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -21.5
-offset_top = -7.0
-offset_right = 21.5
-offset_bottom = 16.0
+offset_left = -48.0
+offset_top = -8.0
+offset_right = 48.0
+offset_bottom = 41.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Screenshot"
@@ -964,18 +1017,20 @@ texture_pressed = ExtResource("95_ms6j8")
 shape = SubResource("CircleShape2D_q7kt0")
 
 [node name="Label" type="Label" parent="TopCenter/JoypadButton6" unique_id=1741042731]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = 1.0
-offset_top = -11.5
-offset_right = 96.0
-offset_bottom = 11.5
+offset_left = -5.0
+offset_top = -24.5
+offset_right = 91.0
+offset_bottom = 24.5
 grow_horizontal = 0
 grow_vertical = 2
 text = "Pause Menu"
+vertical_alignment = 1
 
 [node name="TopRight" type="Control" parent="." unique_id=1075942319]
 layout_mode = 3
@@ -993,16 +1048,19 @@ shape = SubResource("CircleShape2D_rs4nb")
 passby_press = true
 
 [node name="Label" type="Label" parent="TopRight/JoypadButton10" unique_id=481911405]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
 offset_left = -90.0
-offset_top = -11.5
-offset_right = -3.0
-offset_bottom = 11.5
+offset_top = -24.5
+offset_right = 6.0
+offset_bottom = 24.5
 grow_vertical = 2
 text = "Throw"
 horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_mode = 3
 metadata/_edit_use_anchors_ = true
 
 [node name="JoypadAxis5Plus" type="TouchScreenButton" parent="TopRight" unique_id=1548286525]
@@ -1013,14 +1071,16 @@ shape = SubResource("CircleShape2D_rs4nb")
 passby_press = true
 
 [node name="Label" type="Label" parent="TopRight/JoypadAxis5Plus" unique_id=806977869]
+custom_maximum_size = Vector2(96, 49)
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = -88.0
-offset_top = -11.5
-offset_right = -1.0
-offset_bottom = 11.5
+offset_left = -91.0
+offset_top = -24.5
+offset_right = 5.0
+offset_bottom = 24.5
 grow_vertical = 2
 text = "Shoot"
 horizontal_alignment = 2
-
+vertical_alignment = 1
+autowrap_mode = 3

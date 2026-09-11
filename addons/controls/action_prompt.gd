@@ -6,6 +6,11 @@ extends Node3D
 ## Hang one on anything the player can walk up to and interact with. It shows only the sub-prompt for the
 ## device being played on, which it reads off a [Controls] node, and it can name that node's bottom-action
 ## button after what it does ("Pick Up", "Get In") while it is up.
+##
+## Each sub-prompt is laid out from the text itself rather than from fixed positions: the two labels are
+## measured, the row is assembled as [code]begin[/code], gap, button art, gap, [code]end[/code], and the whole
+## thing is centred on this node. So any wording reads evenly, however long or short either side of the glyph
+## is, and a side left blank takes its gap with it.
 
 var _message_begin: String = "Press"
 var _message_end: String = "to interact"
@@ -24,6 +29,12 @@ var _message_end: String = "to interact"
 	get:
 		return _message_end
 
+## Space between the button art and the text on either side of it, in metres.
+@export var glyph_gap: float = 0.05:
+	set(value):
+		glyph_gap = value
+		update_text()
+
 @onready var label_3d_1: Label3D = $KeyboardMouse/Label3D
 @onready var label_3d_2: Label3D = $Microsoft/Label3D
 @onready var label_3d_3: Label3D = $Nintendo/Label3D
@@ -39,7 +50,18 @@ var _message_end: String = "to interact"
 func _ready() -> void:
 	if not Engine.is_editor_hint():
 		hide()
+	# In the editor the row has to follow anything that changes its width, and a label's own font, font_size
+	# and pixel_size have no signal to listen to, so they are checked each frame. Editor only: at runtime the
+	# width only changes when the text does, and setting the text lays the row out itself.
+	set_process(Engine.is_editor_hint())
 	update_text()
+
+
+## Editor only, so the inspector shows the real spacing while it is being typed into. [method lay_out] writes
+## nothing when the numbers already match, so an idle scene is not marked unsaved by this.
+func _process(_delta: float) -> void:
+	for child: Node3D in get_children():
+		lay_out(child)
 
 
 ## Shows only the sub-prompt matching [param controls]' current input type (child names mirror
@@ -88,3 +110,55 @@ func update_text() -> void:
 	label_3d_2_2.text = message_end
 	label_3d_2_3.text = message_end
 	label_3d_2_4.text = message_end
+
+	for child: Node3D in get_children():
+		lay_out(child)
+
+
+## Spaces one sub-prompt out from the width of its own text: [code]begin[/code], gap, button art, gap,
+## [code]end[/code], centred on this node so the phrase sits balanced over whatever the prompt is attached to.
+## The X of all three is this method's to set; whatever the scene holds is overwritten.
+func lay_out(row: Node3D) -> void:
+	var begin: Label3D = row.get_node_or_null("Label3D") as Label3D
+	var glyph: MeshInstance3D = row.get_node_or_null("MeshInstance3D") as MeshInstance3D
+	var end: Label3D = row.get_node_or_null("Label3D2") as Label3D
+	if begin == null or glyph == null or end == null:
+		return
+
+	var begin_width: float = text_width(begin)
+	var end_width: float = text_width(end)
+	var glyph_width: float = glyph_size(glyph).x
+	# A gap belongs next to text that is there; an empty side takes its gap with it rather than leaving a hole.
+	var begin_gap: float = glyph_gap if begin_width > 0.0 else 0.0
+	var end_gap: float = glyph_gap if end_width > 0.0 else 0.0
+
+	var x: float = -(begin_width + begin_gap + glyph_width + end_gap + end_width) / 2.0
+	_place(begin, x + begin_width / 2.0)
+	x += begin_width + begin_gap
+	_place(glyph, x + glyph_width / 2.0)
+	x += glyph_width + end_gap
+	_place(end, x + end_width / 2.0)
+
+
+## Moves [param node] to [param x], and only when it is not already there: assigning a transform every frame
+## would leave the editor showing an untouched scene as modified.
+func _place(node: Node3D, x: float) -> void:
+	if not is_equal_approx(node.position.x, x):
+		node.position.x = x
+
+
+## How wide [param label] renders, in metres. Measured from the font rather than the drawn mesh, because the
+## mesh is not rebuilt until the frame after the text is set and the layout has to be right straight away.
+func text_width(label: Label3D) -> float:
+	if label.text.is_empty():
+		return 0.0
+	var font: Font = label.font if label.font != null else ThemeDB.fallback_font
+	return font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.font_size).x * label.pixel_size
+
+
+## How big [param glyph]'s quad is, in metres, its own scale included.
+func glyph_size(glyph: MeshInstance3D) -> Vector2:
+	var quad: QuadMesh = glyph.mesh as QuadMesh
+	if quad == null:
+		return Vector2(glyph.get_aabb().size.x * glyph.scale.x, glyph.get_aabb().size.y * glyph.scale.y)
+	return quad.size * Vector2(glyph.scale.x, glyph.scale.y)
