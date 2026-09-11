@@ -151,6 +151,68 @@ func test_the_system_slots_bind_the_keys_their_faces_show() -> void:
 			"%s answers to %s" % [pair[0], OS.get_keycode_string(pair[1])])
 
 
+## The editor gets its own pass, because _ready bails out there rather than registering actions or swapping
+## textures. Without it a scene shows every button on the HUD, mapped or not, which is not what ships: an
+## AlleyCat-style consumer instances controls.tscn with no overrides at all and would show a Zoom button for
+## a game that never asked for one.
+func test_the_editor_preview_hides_what_the_game_did_not_map() -> void:
+	_controls = _make_controls()
+	for item: CanvasItem in _controls._previewable_items():
+		item.visible = true
+
+	_controls.preview_in_editor()
+
+	assert_false(_controls.joypad_button_8.visible, "The right stick click is blank by default, so no Zoom")
+	assert_false(_controls.joypad_button_9.visible, "nor a shoulder")
+	assert_false(_controls.joypad_axis_4_plus.visible, "nor a trigger")
+	assert_false(_controls.right_joystick.visible, "nor the stick nothing looks around with")
+	assert_true(_controls.joypad_button_0.visible, "The bottom face button is ui_accept, so it stays")
+	assert_true(_controls.joypad_button_11.visible, "and the d-pad is ui_up and friends")
+
+
+## Mapping a slot brings its button back, so the inspector shows the change as it is typed.
+func test_the_editor_preview_follows_a_slot_being_mapped() -> void:
+	_controls = _make_controls()
+	_controls.preview_in_editor()
+	assert_false(_controls.joypad_button_8.visible, "Blank to begin with")
+
+	_controls.action_button_8 = &"test_zoom"
+	_controls.preview_in_editor()
+	assert_true(_controls.joypad_button_8.visible, "and back the moment it is mapped")
+
+
+## The preview obeys the device the same way the running HUD does, so the editor is not showing a keyboard
+## set over a pad set or the other way round.
+func test_the_editor_preview_obeys_the_device() -> void:
+	_controls = _make_controls()
+	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
+	_controls.preview_in_editor()
+	assert_true(_controls.key_w.visible, "On keyboard the mapped letter keys show")
+	assert_false(_controls.left_joystick.visible, "and the stick does not")
+	assert_false(_controls.dpad_base.visible, "nor the d-pad cross")
+
+	_controls.current_input_type = Controls.InputType.SONY
+	_controls.preview_in_editor()
+	assert_false(_controls.key_w.visible, "On a pad the letter keys go away")
+	assert_true(_controls.left_joystick.visible, "and the stick comes back")
+
+
+## Writing a visibility that already matches would mark an untouched scene as modified in the editor.
+func test_the_editor_preview_writes_nothing_when_it_already_matches() -> void:
+	_controls = _make_controls()
+	_controls.preview_in_editor()
+	var before: Array[bool] = []
+	for item: CanvasItem in _controls._previewable_items():
+		before.append(item.visible)
+
+	_controls.preview_in_editor()
+
+	var after: Array[bool] = []
+	for item: CanvasItem in _controls._previewable_items():
+		after.append(item.visible)
+	assert_eq(before, after, "A second pass changes nothing")
+
+
 ## Godot's own ui_* actions are the exception: they are extended rather than skipped, so the on-screen
 ## d-pad works even though the engine declared the action first.
 func test_builtin_ui_actions_are_extended() -> void:

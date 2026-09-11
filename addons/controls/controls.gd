@@ -414,10 +414,12 @@ func _validate_property(property: Dictionary) -> void:
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	# The script is @tool only so the inspector can build those pickers. Nothing else here should run
-	# in the editor: it registers InputMap actions and swaps textures, and an edited scene has no
-	# business doing either.
+	# Registering InputMap actions and swapping textures is no business of an edited scene, so none of the
+	# rest of this runs in the editor. What does is the visibility, because a scene that shows buttons the
+	# game never mapped is a scene that does not show what ships - which is the whole point of looking at it.
 	if Engine.is_editor_hint():
+		preview_in_editor()
+		set_process(true)
 		return
 	set_process(is_multiplayer_authority())
 	set_physics_process(is_multiplayer_authority())
@@ -703,6 +705,61 @@ func set_labels(label_texts: Dictionary) -> void:
 			label.text = ""
 	_apply_prompt_label()
 	_labels_applied()
+
+
+## Editor only, so a slot mapped or blanked in the inspector shows or hides as it is typed. The exported
+## action names have no setters to hang this off - there are two dozen of them - so it is checked each frame.
+func _process(_delta: float) -> void:
+	if Engine.is_editor_hint():
+		preview_in_editor()
+
+
+## Shows the editor what will actually be on screen: a slot the game has not mapped is hidden, and the
+## keyboard or the joypad set is shown for [member current_input_type], exactly as [method update_input_ui]
+## decides it at runtime. Nothing is registered, no texture is swapped and no action is written to a button,
+## and a visibility that already matches is left alone, so an untouched scene is not marked modified.
+func preview_in_editor() -> void:
+	var unmapped: Array[CanvasItem] = unmapped_items()
+	var is_keyboard: bool = current_input_type == InputType.KEYBOARD_MOUSE
+	for item: CanvasItem in _previewable_items():
+		var wanted: bool = not unmapped.has(item)
+		if _joypad_only.has(item):
+			wanted = wanted and not is_keyboard
+		elif _keyboard_only.has(item):
+			wanted = wanted and is_keyboard
+		if item.visible != wanted:
+			item.visible = wanted
+
+
+## The buttons and sticks the game has left blank, worked out without writing an action to any of them, so
+## the editor can hide them without touching the scene. [method _apply_slot_actions] does the same at runtime
+## as a side effect of assigning the actions.
+func unmapped_items() -> Array[CanvasItem]:
+	var slot_actions: Dictionary = get_slot_actions()
+	var slot_buttons: Dictionary = _get_slot_buttons()
+	var unmapped: Array[CanvasItem] = []
+	for slot: String in slot_buttons:
+		if not String(slot_actions[slot]).is_empty():
+			continue
+		for button: TouchScreenButton in slot_buttons[slot]:
+			unmapped.append(button)
+	if action_move_up.is_empty() and action_move_down.is_empty():
+		unmapped.append(left_joystick)
+	if action_look_up.is_empty() and action_look_down.is_empty():
+		unmapped.append(right_joystick)
+	return unmapped
+
+
+## Everything [method preview_in_editor] is allowed to show or hide: every button, both sticks, and the
+## d-pad cross behind the d-pad buttons.
+func _previewable_items() -> Array[CanvasItem]:
+	var items: Array[CanvasItem] = []
+	for button: TouchScreenButton in all_buttons:
+		items.append(button)
+	items.append(left_joystick)
+	items.append(right_joystick)
+	items.append(dpad_base)
+	return items
 
 
 ## Applies the current input type: device textures on the swappable buttons, keyboard vs joypad visibility,

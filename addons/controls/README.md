@@ -59,6 +59,11 @@ Two rules follow from that table.
 shoulders, the triggers and the right stick are absent until you map them. A HUD that shows a Throw button for
 a game with no throwing is worse than no HUD.
 
+That hiding happens in the editor as well as in the running game, so the scene shows what ships rather than
+every button the HUD owns. Only the visibility is previewed: no action is registered, no texture is swapped
+and nothing is written to a button, and a visibility that already matches is left alone so an untouched scene
+is not marked modified. Map or blank a slot in the inspector and its button appears or disappears as you type.
+
 The share button is the exception, and the next section says why.
 
 ## Picking from a list the game published
