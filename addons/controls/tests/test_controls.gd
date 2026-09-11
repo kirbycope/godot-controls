@@ -352,3 +352,42 @@ func test_a_key_face_survives_being_pressed_and_released() -> void:
 	var controls: Controls = _make_controls({"keyboard_mouse_move_up_normal": arrow_up})
 	controls.update_input_ui()
 	assert_eq(controls.key_w.texture_normal, arrow_up, "still the project's own after a redraw")
+
+
+## The catalog turns every slot into a picker, so a project whose game only answers to a known list of
+## actions cannot put anything else on a button.
+func test_a_catalog_turns_the_slots_into_a_picker() -> void:
+	var catalog: ControlsInputCatalog = ControlsInputCatalog.new()
+	catalog.actions = [&"game_up", &"game_down", &"game_fire"]
+	var controls: Controls = _make_controls({"input_catalog": catalog})
+	for property: Dictionary in controls.get_property_list():
+		if not String(property["name"]).begins_with("action_"):
+			continue
+		assert_eq(property["hint"], PROPERTY_HINT_ENUM, "%s is a picker" % property["name"])
+		assert_eq(property["hint_string"], ",game_up,game_down,game_fire", property["name"])
+
+
+## Without one the slots stay free text, which is every project that was using this before.
+func test_no_catalog_leaves_the_slots_as_they_were() -> void:
+	var controls: Controls = _make_controls()
+	for property: Dictionary in controls.get_property_list():
+		if String(property["name"]).begins_with("action_"):
+			assert_ne(property["hint"], PROPERTY_HINT_ENUM, "%s is still free text" % property["name"])
+
+
+## A slot left blank is a button the game does not use and the HUD hides it, so the picker has to offer
+## that as a choice even though it is not in the catalog.
+func test_the_picker_always_offers_a_blank_choice() -> void:
+	var catalog: ControlsInputCatalog = ControlsInputCatalog.new()
+	catalog.actions = [&"game_up"]
+	assert_true(catalog.hint_string().begins_with(","), "the first choice is blank")
+	assert_true(catalog.has_action(&""), "and blank is a valid slot")
+	assert_true(catalog.has_action(&"game_up"))
+	assert_false(catalog.has_action(&"game_sideways"))
+
+
+## A catalog is written by hand or generated, and either way can end up with a blank or a repeat in it.
+func test_the_picker_drops_blanks_and_repeats() -> void:
+	var catalog: ControlsInputCatalog = ControlsInputCatalog.new()
+	catalog.actions = [&"game_up", &"", &"game_up", &"game_down"]
+	assert_eq(catalog.hint_string(), ",game_up,game_down")

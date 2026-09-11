@@ -1,3 +1,4 @@
+@tool
 class_name Controls
 extends CanvasLayer
 
@@ -65,6 +66,15 @@ const SLOT_EVENTS: Dictionary = {
 ## acts on itself, because capturing the screen is not something a game has to be asked about; turn it off in a
 ## project that captures the screen its own way, or blank [member action_button_15] to drop the button entirely.
 @export var takes_screenshots: bool = true
+
+## The inputs the game will actually answer to. Set it and every [code]action_*[/code] slot below
+## becomes a picker of those names instead of free text, so a slot cannot name an action the game has
+## never heard of. Leave it unset and the slots stay plain text, which is what a game that defines its
+## own actions wants. A wrapper around an engine or an emulator usually ships one.
+@export var input_catalog: ControlsInputCatalog:
+	set(value):
+		input_catalog = value
+		notify_property_list_changed()
 
 @export_group("Face Button Actions", "action_")
 @export var action_button_0: StringName = &"ui_accept" ## Bottom face button. Microsoft: Ⓐ, Nintendo: Ⓑ, Sony: ✕
@@ -392,8 +402,22 @@ var _prompt_owner: Object = null ## The [ActionPrompt] that claimed [member prom
 var _foreign_actions: Dictionary = {} ## Actions the project had declared before this node registered any, which are its own to bind.
 
 
+## Turns every slot into a picker of the catalog's actions when one is set. Godot asks about each
+## exported property in turn, so this only touches the ones named for a slot.
+func _validate_property(property: Dictionary) -> void:
+	if input_catalog == null or not String(property.name).begins_with("action_"):
+		return
+	property.hint = PROPERTY_HINT_ENUM
+	property.hint_string = input_catalog.hint_string()
+
+
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	# The script is @tool only so the inspector can build those pickers. Nothing else here should run
+	# in the editor: it registers InputMap actions and swaps textures, and an edited scene has no
+	# business doing either.
+	if Engine.is_editor_hint():
+		return
 	set_process(is_multiplayer_authority())
 	set_physics_process(is_multiplayer_authority())
 	set_process_input(is_multiplayer_authority())

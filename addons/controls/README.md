@@ -60,6 +60,23 @@ a game with no throwing is worse than no HUD.
 
 The share button is the exception, and the next section says why.
 
+## Picking from a list the game published
+
+A slot's action is free text, which suits a game that declares its own actions. A game that only ever answers
+to a fixed list - an engine or an emulator wrapped as a GDExtension, which reads the InputMap and nothing else
+- can hand that list over instead, and the slots become a picker of it:
+
+```gdscript
+controls.input_catalog = preload("res://addons/some_game/some_game_inputs.tres")
+```
+
+`ControlsInputCatalog` is a resource with one field, `actions`. Set `input_catalog` on the HUD and every
+`action_*` export turns into a dropdown of those names, plus a blank choice, so a slot cannot quietly name an
+action the game has never heard of. Leave it unset and nothing changes.
+
+That is the whole of it, and it is deliberately thin: the HUD does not learn what any of those actions mean,
+and the game does not learn that the HUD exists. It is the same slot mechanism, with the typing taken out.
+
 **A slot you name yourself is registered for you.** Set `action_button_2` to `attack` and the addon adds an
 `attack` action bound to the face button it is drawn on, so the addon is a drop-in and needs no `project.godot`
 edits. An action your project already declared is left exactly as it is, bindings and all, because those are
