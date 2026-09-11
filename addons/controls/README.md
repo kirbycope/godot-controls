@@ -108,7 +108,7 @@ A binding takes `keys` (physical keycodes), `keycodes` (logical ones), `buttons`
 
 The share button - Xbox Share, Nintendo Capture, PlayStation Create, `PrtScn` on a keyboard - is the one slot
 the HUD fills in and acts on itself. Every other button is a question for your game; capturing the screen is
-not, and the scene has labelled that button "Screenshot" since before it did anything.
+not. Its label is still yours to write, the same as every other button.
 
 Pressing it saves a PNG of what is on screen, with the HUD left out of the picture, and emits
 `screenshot_taken`. Off the web the file lands in `user://screenshots/`. On the web it cannot: `user://` there
@@ -127,7 +127,10 @@ the HUD stops acting on it. Blank `action_button_15` and the button goes, like a
 
 ## Labels
 
-Each button carries a `Label` naming what it does right now. `set_labels` writes the ones you name and clears
+Each button carries a `Label` naming what it does right now, and every one of them starts **empty**. The HUD
+cannot know that a button is Jump rather than Attack, so it does not guess: a project names them, either in
+its own scene the way the demo does or at runtime as a screen changes. `set_labels` writes the ones you name
+and clears
 the rest, so one call describes one screen:
 
 ```gdscript
@@ -139,7 +142,8 @@ controls.set_labels({
 ```
 
 Naming a joypad label gets the key that does the same job for free: the d-pad's four labels mirror onto `I`,
-`J`, `K` and `L`, and the sticks onto `S` and the down arrow. `reset_labels` puts the scene's own text back.
+`J`, `K` and `L`, and the sticks onto `S` and the down arrow. `reset_labels` puts the scene's own text back -
+the text on your instance, so a project that named its buttons in the scene gets those back, not blanks.
 
 `ActionPrompt.show_for(controls, "Pick Up")` names the bottom-action button after what the prompt does, and it
 keeps that name through every refresh until `hide_for` gives it back. Only the prompt that claimed the label

@@ -312,6 +312,15 @@ func test_set_labels_mirrors_onto_the_keyboard_set() -> void:
 	assert_eq(_controls.key_s_label.text, "Walk", "The [S] key reads what the left stick reads")
 
 
+## The HUD names no button for you. A label is what the game calls that button in that moment, and the addon
+## cannot know it, so every one of them starts empty and a project writes them with set_labels or in its own
+## scene - which is what the demo does.
+func test_every_label_starts_blank() -> void:
+	_controls = _make_controls()
+	for label: Label in _controls.all_labels:
+		assert_eq(label.text, "", "%s is the game's to name" % label.get_parent().name)
+
+
 func test_reset_labels_restores_the_scene_text() -> void:
 	_controls = _make_controls()
 	var original: String = _controls.joypad_button_0_label.text
@@ -372,7 +381,7 @@ func test_the_share_button_is_the_screenshot_button() -> void:
 	assert_eq(_controls.joypad_button_15.action, &"take_screenshot", "and it is on the button")
 	assert_true(InputMap.has_action("take_screenshot"), "registered like any other slot")
 	assert_true(_controls.joypad_button_15.visible, "and shown, where every other unset slot is hidden")
-	assert_eq(_controls.joypad_button_15_label.text, "Screenshot")
+	assert_eq(_controls.joypad_button_15_label.text, "", "The label is the game's to write, like every other")
 
 
 func test_a_project_can_still_have_the_slot_or_drop_it() -> void:

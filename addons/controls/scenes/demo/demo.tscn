@@ -100,3 +100,98 @@ action_look_left = &"demo_look_left"
 action_look_right = &"demo_look_right"
 keyboard_mouse_button_2_normal = ExtResource("4_f_out")
 keyboard_mouse_button_2_pressed = ExtResource("5_f")
+
+[node name="Label" parent="Controls/BottomLeft/JoypadButton11" index="0"]
+text = "Up"
+
+[node name="Label" parent="Controls/BottomLeft/JoypadButton12" index="0"]
+text = "Down"
+
+[node name="Label" parent="Controls/BottomLeft/JoypadButton13" index="0"]
+text = "Left"
+
+[node name="Label" parent="Controls/BottomLeft/JoypadButton14" index="0"]
+text = "Right"
+
+[node name="Label" parent="Controls/BottomLeft/JoypadButton7" index="0"]
+text = "Crouch"
+
+[node name="Label" parent="Controls/BottomLeft/LeftJoystick" index="0"]
+text = "Move"
+
+[node name="Label" parent="Controls/BottomLeft/KeyW" index="0"]
+text = "Move"
+
+[node name="Label" parent="Controls/BottomLeft/KeyA" index="0"]
+text = "Move"
+
+[node name="Label" parent="Controls/BottomLeft/KeyS" index="0"]
+text = "Move"
+
+[node name="Label" parent="Controls/BottomLeft/KeyD" index="0"]
+text = "Move"
+
+[node name="Label" parent="Controls/BottomLeft/KeyI" index="0"]
+text = "Up"
+
+[node name="Label" parent="Controls/BottomLeft/KeyJ" index="0"]
+text = "Left"
+
+[node name="Label" parent="Controls/BottomLeft/KeyK" index="0"]
+text = "Down"
+
+[node name="Label" parent="Controls/BottomLeft/KeyL" index="0"]
+text = "Right"
+
+[node name="Label" parent="Controls/BottomRight/JoypadButton0" index="0"]
+text = "Action"
+
+[node name="Label" parent="Controls/BottomRight/JoypadButton1" index="0"]
+text = "Sprint"
+
+[node name="Label" parent="Controls/BottomRight/JoypadButton2" index="0"]
+text = "Attack"
+
+[node name="Label" parent="Controls/BottomRight/JoypadButton3" index="0"]
+text = "Jump"
+
+[node name="Label" parent="Controls/BottomRight/JoypadButton8" index="0"]
+text = "Zoom"
+
+[node name="Label" parent="Controls/BottomRight/RightJoystick" index="0"]
+text = "Camera"
+
+[node name="Label" parent="Controls/BottomRight/KeyUp" index="0"]
+text = "Camera"
+
+[node name="Label" parent="Controls/BottomRight/KeyLeft" index="0"]
+text = "Camera"
+
+[node name="Label" parent="Controls/BottomRight/KeyDown" index="0"]
+text = "Camera"
+
+[node name="Label" parent="Controls/BottomRight/KeyRight" index="0"]
+text = "Camera"
+
+[node name="Label" parent="Controls/TopLeft/JoypadButton9" index="0"]
+text = "Ability"
+
+[node name="Label" parent="Controls/TopLeft/JoypadAxis4Plus" index="0"]
+text = "Aim"
+
+[node name="Label" parent="Controls/TopCenter/JoypadButton4" index="0"]
+text = "View"
+
+[node name="Label" parent="Controls/TopCenter/JoypadButton15" index="0"]
+text = "Screenshot"
+
+[node name="Label" parent="Controls/TopCenter/JoypadButton6" index="0"]
+text = "Pause Menu"
+
+[node name="Label" parent="Controls/TopRight/JoypadButton10" index="0"]
+text = "Throw"
+
+[node name="Label" parent="Controls/TopRight/JoypadAxis5Plus" index="0"]
+text = "Shoot"
+
+[editable path="Controls"]
