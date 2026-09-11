@@ -108,9 +108,15 @@ A binding takes `keys` (physical keycodes), `keycodes` (logical ones), `buttons`
 
 The share button - Xbox Share, Nintendo Capture, PlayStation Create, `PrtScn` on a keyboard - is the one slot
 the HUD fills in and acts on itself. Every other button is a question for your game; capturing the screen is
-not. It is also the one button the HUD names: Sony and Xbox call the physical button Share, Nintendo calls
-it Capture and a keyboard has `PrtScn`, but it takes a screenshot on all of them, so the art is what changes
-per device and the label stays "Screenshot". Name it yourself if your game has a better word for it.
+not. It is also the one button the HUD names, and the only label that does not start blank: it takes a
+screenshot on every device, so the label stays "Screenshot" and the art is what changes. Name it yourself
+if your game has a better word for it.
+
+The art follows the binding rather than the vendor's marketing. The slot is `JOY_BUTTON_MISC1`, which SDL -
+and so Godot - documents as "Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture
+button". So PlayStation shows the **mute** button, because that is the one that fires: Create is
+`JOY_BUTTON_BACK`, which is the View slot. Nintendo shows `switch_button_sync` only because the icon set
+ships no capture glyph; that one is still wrong and wants art.
 
 Pressing it saves a PNG of what is on screen, with the HUD left out of the picture, and emits
 `screenshot_taken`. Off the web the file lands in `user://screenshots/`. On the web it cannot: `user://` there

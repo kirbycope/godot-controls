@@ -325,17 +325,21 @@ func test_every_label_starts_blank_but_the_share_button() -> void:
 	assert_eq(_controls.joypad_button_15_label.text, "Screenshot", "and the share button names itself")
 
 
-## The PlayStation art for this slot used to be the touchpad, which is not the button that shares anything.
-## It is the Share button now, and it has to stay distinct from the View slot, which carries Create.
-func test_the_playstation_share_button_is_not_the_touchpad() -> void:
+## The art has to name the button the slot is actually bound to, or the HUD is telling a player to press
+## something that will not work. The slot is JOY_BUTTON_MISC1, which SDL - and so Godot - documents as the
+## Xbox share button, the Switch Pro capture button and, on a DualSense, the microphone button. So PlayStation
+## shows the mute button: not the touchpad, and not Create, which is JOY_BUTTON_BACK and a different slot.
+func test_the_playstation_art_names_the_button_that_is_bound() -> void:
 	_controls = _make_controls({"action_button_4": &"test_view"})
-	_controls.current_input_type = Controls.InputType.SONY
+	assert_eq(Controls.SLOT_EVENTS["button_15"]["buttons"], [JOY_BUTTON_MISC1],
+		"The slot is MISC1, the mic button on a DualSense")
 
-	var share_art: String = _controls.joypad_button_15.texture_normal.resource_path.get_file()
-	assert_string_contains(share_art, "share", "The screenshot slot shows the Share button")
-	assert_false(share_art.contains("touchpad"), "and not the touchpad")
-	assert_ne(share_art, _controls.joypad_button_4.texture_normal.resource_path.get_file(),
-		"and the View slot keeps its own art rather than doubling up")
+	_controls.current_input_type = Controls.InputType.SONY
+	var art: String = _controls.joypad_button_15.texture_normal.resource_path.get_file()
+	assert_string_contains(art, "mute", "so the art is the mic button a player can actually press")
+	assert_false(art.contains("touchpad"), "not the touchpad, which is a different button again")
+	assert_ne(art, _controls.joypad_button_4.texture_normal.resource_path.get_file(),
+		"and not Create, which is JOY_BUTTON_BACK and lives on the View slot")
 
 
 ## Sony and Xbox call the button Share, Nintendo calls it Capture, a keyboard has Print Screen - but it takes
