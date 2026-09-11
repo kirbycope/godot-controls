@@ -4,3 +4,7 @@
 .DS_Store
 test-results/
 .mcp/
+
+# Python bytecode caches from the scripts in tools/
+__pycache__/
+*.pyc
