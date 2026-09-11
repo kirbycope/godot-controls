@@ -182,9 +182,6 @@ text = "Aim"
 [node name="Label" parent="Controls/TopCenter/JoypadButton4" index="0"]
 text = "View"
 
-[node name="Label" parent="Controls/TopCenter/JoypadButton15" index="0"]
-text = "Screenshot"
-
 [node name="Label" parent="Controls/TopCenter/JoypadButton6" index="0"]
 text = "Pause Menu"
 

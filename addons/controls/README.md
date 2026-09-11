@@ -108,7 +108,9 @@ A binding takes `keys` (physical keycodes), `keycodes` (logical ones), `buttons`
 
 The share button - Xbox Share, Nintendo Capture, PlayStation Create, `PrtScn` on a keyboard - is the one slot
 the HUD fills in and acts on itself. Every other button is a question for your game; capturing the screen is
-not. Its label is still yours to write, the same as every other button.
+not. It is also the one button the HUD names: Sony and Xbox call the physical button Share, Nintendo calls
+it Capture and a keyboard has `PrtScn`, but it takes a screenshot on all of them, so the art is what changes
+per device and the label stays "Screenshot". Name it yourself if your game has a better word for it.
 
 Pressing it saves a PNG of what is on screen, with the HUD left out of the picture, and emits
 `screenshot_taken`. Off the web the file lands in `user://screenshots/`. On the web it cannot: `user://` there
@@ -127,9 +129,10 @@ the HUD stops acting on it. Blank `action_button_15` and the button goes, like a
 
 ## Labels
 
-Each button carries a `Label` naming what it does right now, and every one of them starts **empty**. The HUD
-cannot know that a button is Jump rather than Attack, so it does not guess: a project names them, either in
-its own scene the way the demo does or at runtime as a screen changes. `set_labels` writes the ones you name
+Each button carries a `Label` naming what it does right now, and every one of them starts **empty** except
+the share button. The HUD cannot know that a button is Jump rather than Attack, so it does not guess: a
+project names them, either in its own scene the way the demo does or at runtime as a screen changes. The
+share button is named because the HUD is what makes it do anything, and what it does does not vary. `set_labels` writes the ones you name
 and clears
 the rest, so one call describes one screen:
 

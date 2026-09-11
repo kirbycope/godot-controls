@@ -103,10 +103,10 @@
 [ext_resource type="Texture2D" uid="uid://dmgwqxju2cyfe" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_arrow_right_outline.svg" id="84_o5u1y"]
 [ext_resource type="Texture2D" uid="uid://ml7bdqo0v5ja" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/PlayStation Series/Vector/playstation5_button_create.svg" id="85_iccxp"]
 [ext_resource type="Texture2D" uid="uid://b3cvd04a167xq" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/keyboard_arrow_right.svg" id="85_osf25"]
-[ext_resource type="Texture2D" uid="uid://bi7t1rghxrjgm" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/PlayStation Series/Vector/playstation4_touchpad_outline.svg" id="86_1mwrh"]
+[ext_resource type="Texture2D" uid="uid://bnvvcanmkma5u" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/PlayStation Series/Vector/playstation4_button_share_outline.svg" id="86_1mwrh"]
 [ext_resource type="Texture2D" uid="uid://dv0iqqk34c7ve" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Xbox Series/Vector/xbox_lb_outline.svg" id="86_6rw3k"]
 [ext_resource type="Texture2D" uid="uid://bji81b6l8eid0" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Xbox Series/Vector/xbox_lb.svg" id="87_h8pou"]
-[ext_resource type="Texture2D" uid="uid://bj48a7pyp5xe1" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/PlayStation Series/Vector/playstation4_touchpad_selected.svg" id="87_uepbl"]
+[ext_resource type="Texture2D" uid="uid://dnc7n7vi6f85h" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/PlayStation Series/Vector/playstation4_button_share.svg" id="87_uepbl"]
 [ext_resource type="Texture2D" uid="uid://dr7c6vky6427t" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/PlayStation Series/Vector/playstation5_button_options_outline.svg" id="88_8gkmr"]
 [ext_resource type="Texture2D" uid="uid://c1n1m3jo7bisj" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Xbox Series/Vector/xbox_lt_outline.svg" id="88_bt0ik"]
 [ext_resource type="Texture2D" uid="uid://3uks54sktwjm" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Xbox Series/Vector/xbox_lt.svg" id="89_qjs60"]
@@ -980,6 +980,7 @@ offset_right = 48.0
 offset_bottom = 41.0
 grow_horizontal = 2
 grow_vertical = 0
+text = "Screenshot"
 horizontal_alignment = 1
 
 [node name="JoypadButton6" type="TouchScreenButton" parent="TopCenter" unique_id=231754768]

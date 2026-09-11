@@ -314,11 +314,42 @@ func test_set_labels_mirrors_onto_the_keyboard_set() -> void:
 
 ## The HUD names no button for you. A label is what the game calls that button in that moment, and the addon
 ## cannot know it, so every one of them starts empty and a project writes them with set_labels or in its own
-## scene - which is what the demo does.
-func test_every_label_starts_blank() -> void:
+## scene - which is what the demo does. The share button is the exception, because the addon is what makes it
+## do something, and what it does is the same on every device.
+func test_every_label_starts_blank_but_the_share_button() -> void:
 	_controls = _make_controls()
 	for label: Label in _controls.all_labels:
+		if label == _controls.joypad_button_15_label:
+			continue
 		assert_eq(label.text, "", "%s is the game's to name" % label.get_parent().name)
+	assert_eq(_controls.joypad_button_15_label.text, "Screenshot", "and the share button names itself")
+
+
+## The PlayStation art for this slot used to be the touchpad, which is not the button that shares anything.
+## It is the Share button now, and it has to stay distinct from the View slot, which carries Create.
+func test_the_playstation_share_button_is_not_the_touchpad() -> void:
+	_controls = _make_controls({"action_button_4": &"test_view"})
+	_controls.current_input_type = Controls.InputType.SONY
+
+	var share_art: String = _controls.joypad_button_15.texture_normal.resource_path.get_file()
+	assert_string_contains(share_art, "share", "The screenshot slot shows the Share button")
+	assert_false(share_art.contains("touchpad"), "and not the touchpad")
+	assert_ne(share_art, _controls.joypad_button_4.texture_normal.resource_path.get_file(),
+		"and the View slot keeps its own art rather than doubling up")
+
+
+## Sony and Xbox call the button Share, Nintendo calls it Capture, a keyboard has Print Screen - but it takes
+## a screenshot on all of them, so the art is what changes per device and the label is what stays.
+func test_the_share_label_holds_while_its_art_changes() -> void:
+	_controls = _make_controls()
+	var seen: Dictionary = {}
+	for input_type: Controls.InputType in [Controls.InputType.KEYBOARD_MOUSE, Controls.InputType.MICROSOFT,
+			Controls.InputType.NINTENDO, Controls.InputType.SONY]:
+		_controls.current_input_type = input_type
+		assert_eq(_controls.joypad_button_15_label.text, "Screenshot",
+			"%s still calls it what it does" % Controls.InputType.keys()[input_type])
+		seen[_controls.joypad_button_15.texture_normal] = true
+	assert_eq(seen.size(), 4, "and every device brings its own art for the button")
 
 
 func test_reset_labels_restores_the_scene_text() -> void:
@@ -381,7 +412,7 @@ func test_the_share_button_is_the_screenshot_button() -> void:
 	assert_eq(_controls.joypad_button_15.action, &"take_screenshot", "and it is on the button")
 	assert_true(InputMap.has_action("take_screenshot"), "registered like any other slot")
 	assert_true(_controls.joypad_button_15.visible, "and shown, where every other unset slot is hidden")
-	assert_eq(_controls.joypad_button_15_label.text, "", "The label is the game's to write, like every other")
+	assert_eq(_controls.joypad_button_15_label.text, "Screenshot", "and named after what it does, not after what a vendor calls the button")
 
 
 func test_a_project_can_still_have_the_slot_or_drop_it() -> void:
