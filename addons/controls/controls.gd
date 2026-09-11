@@ -546,8 +546,31 @@ func _register_slot_actions() -> void:
 		var action_name: StringName = slot_actions[slot]
 		if action_name.is_empty():
 			continue
-		table[String(action_name)] = SLOT_EVENTS[slot]
+		# Two slots may name the same action on purpose - a face button that jumps and a stick pushed
+		# up, say - so the table gathers both slots' events rather than the later one replacing the
+		# earlier, which would silently unbind the button the player is looking at.
+		var key: String = String(action_name)
+		table[key] = merge_bindings(table.get(key, {}), SLOT_EVENTS[slot])
 	register_actions(table)
+
+
+## Folds [param addition] into [param base] and returns the result, leaving both alone. Bindings are the
+## shape [method register_actions] takes - [code]keys[/code], [code]keycodes[/code], [code]buttons[/code],
+## [code]axes[/code], [code]mouse[/code], [code]deadzone[/code] - and the lists are joined without repeats,
+## so an action named by two slots answers to everything both slots stand for. Use it anywhere bindings are
+## collected by action name, because a plain assignment there throws one slot's events away.
+static func merge_bindings(base: Dictionary, addition: Dictionary) -> Dictionary:
+	var merged: Dictionary = base.duplicate(true)
+	for key: String in addition:
+		if key == "deadzone":
+			merged[key] = addition[key]
+			continue
+		var values: Array = merged.get(key, []).duplicate()
+		for value: Variant in addition[key]:
+			if not values.has(value):
+				values.append(value)
+		merged[key] = values
+	return merged
 
 
 ## Registers [param table] into the InputMap. A missing action is created and bound. An action the project

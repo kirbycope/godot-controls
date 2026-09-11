@@ -213,6 +213,43 @@ func test_the_editor_preview_writes_nothing_when_it_already_matches() -> void:
 	assert_eq(before, after, "A second pass changes nothing")
 
 
+## Two slots may name the same action on purpose: a face button that jumps and the stick pushed up are
+## both "up" in a game with one direction of it. Both slots then have to fire it, which means gathering the
+## events rather than letting whichever slot comes last replace the other.
+func test_two_slots_on_one_action_keep_both_bindings() -> void:
+	_controls = _make_controls({"action_button_0": &"test_up", "action_move_up": &"test_up"})
+
+	var face_button: InputEventJoypadButton = InputEventJoypadButton.new()
+	face_button.button_index = JOY_BUTTON_A
+	var stick: InputEventJoypadMotion = InputEventJoypadMotion.new()
+	stick.axis = JOY_AXIS_LEFT_Y
+	stick.axis_value = -1.0
+	var key: InputEventKey = InputEventKey.new()
+	key.physical_keycode = KEY_W
+
+	assert_true(InputMap.action_has_event("test_up", face_button), "The face button fires it")
+	assert_true(InputMap.action_has_event("test_up", stick), "and so does the stick")
+	assert_true(InputMap.action_has_event("test_up", key), "and the key the stick slot stands for")
+
+
+## Joining the lists must not leave an action answering to the same event twice.
+func test_merging_bindings_does_not_repeat_an_event() -> void:
+	var merged: Dictionary = Controls.merge_bindings(
+		{"keys": [KEY_W, KEY_UP], "buttons": [JOY_BUTTON_A]},
+		{"keys": [KEY_UP], "buttons": [JOY_BUTTON_A, JOY_BUTTON_B], "deadzone": 0.4})
+
+	assert_eq(merged["keys"], [KEY_W, KEY_UP], "A key both sides name is listed once")
+	assert_eq(merged["buttons"], [JOY_BUTTON_A, JOY_BUTTON_B], "and the new button is added")
+	assert_eq(merged["deadzone"], 0.4, "and a deadzone carries over")
+
+
+## Merging returns a new dictionary, so the constant it was read from is not quietly edited.
+func test_merging_bindings_leaves_its_inputs_alone() -> void:
+	var base: Dictionary = {"keys": [KEY_W]}
+	Controls.merge_bindings(base, {"keys": [KEY_UP]})
+	assert_eq(base["keys"], [KEY_W], "SLOT_EVENTS is a const and has to stay what it was")
+
+
 ## Godot's own ui_* actions are the exception: they are extended rather than skipped, so the on-screen
 ## d-pad works even though the engine declared the action first.
 func test_builtin_ui_actions_are_extended() -> void:
