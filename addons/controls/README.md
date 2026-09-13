@@ -214,6 +214,12 @@ The window is measured through whatever stretch the project applies, so the resu
 the glass whether the game stretches a 1280x800 canvas or draws pixel for pixel, and it goes down as well as
 up. Zero turns the fit off.
 
+The fit is measured through the window's `content_scale_factor` too, so a game that scales its own UI with
+it (a UI scale setting) does not scale the HUD along with it: the buttons keep their share of the glass and
+the menus grow. The HUD never touches that factor or any other scaling of the game's UI. It is hidden and
+shown like any node, with `visible`, and nothing inside it shows it again, so a game that draws the hints
+only on a touchscreen, or not at all, sets `visible` and is done.
+
 `hud_scale` multiplies whatever the fit gives, for a game that wants its HUD a little bigger or smaller than
 the fraction says, or a fixed size with the fit off. Both work corner by corner: each of the five clusters -
 bottom left, bottom right, top left, top centre, top right - is anchored to its corner and pivots there, so
