@@ -623,3 +623,58 @@ func test_the_picker_drops_blanks_and_repeats() -> void:
 	var catalog: ControlsInputCatalog = ControlsInputCatalog.new()
 	catalog.actions = [&"game_up", &"", &"game_up", &"game_down"]
 	assert_eq(catalog.hint_string(), ",game_up,game_down")
+
+
+## The HUD's size is its own, corner by corner: each cluster grows about the corner it is anchored to, so the
+## bottom right stays in the bottom right and its buttons grow into the screen rather than off it.
+func test_hud_scale_grows_each_corner_about_its_own_corner() -> void:
+	_controls = _make_controls()
+	await wait_process_frames(1)
+	var corners: Dictionary = {}
+	for cluster: Control in _controls._clusters:
+		corners[cluster] = cluster.get_global_transform() * cluster.pivot_offset
+	_controls.hud_scale = 2.0
+	for cluster: Control in _controls._clusters:
+		assert_eq(cluster.scale, Vector2(2, 2), "%s is drawn twice as big" % cluster.name)
+		var anchored_corner: Vector2 = Vector2(cluster.anchor_left * cluster.size.x, cluster.anchor_top * cluster.size.y)
+		assert_eq(cluster.pivot_offset, anchored_corner, "%s scales about its anchored corner" % cluster.name)
+		var corner_now: Vector2 = cluster.get_global_transform() * cluster.pivot_offset
+		assert_almost_eq(corner_now, corners[cluster] as Vector2, Vector2(0.5, 0.5), "%s's corner stays put" % cluster.name)
+
+
+## On a touchscreen the HUD grows until a face button is a set fraction of the shorter side of the window in
+## real pixels, whatever the project's stretch mode has made of the canvas, and never shrinks below the scale
+## the game set. Anywhere but a touchscreen the fit is one.
+func test_touch_grows_the_hud_to_a_fraction_of_the_screen() -> void:
+	_controls = _make_controls({"touch_button_fraction": 0.2})
+	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
+	assert_eq(_controls.get_effective_scale(), 1.0, "a keyboard player gets the HUD at the scale the game set")
+	_controls.current_input_type = Controls.InputType.TOUCH
+	var window_size: Vector2 = Vector2(_controls.get_window().size)
+	var drawn: float = Controls.BUTTON_SIZE * _controls.get_viewport().get_final_transform().get_scale().x
+	var expected: float = maxf(1.0, 0.2 * minf(window_size.x, window_size.y) / drawn)
+	assert_gt(expected, 1.0, "a fifth of this window is more than a button, so the HUD has to grow")
+	assert_almost_eq(_controls.get_effective_scale(), expected, 0.001, "a face button is a fifth of the shorter side")
+	assert_almost_eq(_controls._clusters[0].scale.x, expected, 0.001, "and the corners are drawn at that")
+	_controls.hud_scale = 2.0
+	assert_almost_eq(_controls.get_effective_scale(), maxf(2.0, expected), 0.001, "the fit never shrinks the HUD below hud_scale")
+	_controls.hud_scale = 1.0
+	_controls.touch_button_fraction = 0.0
+	assert_eq(_controls.get_effective_scale(), 1.0, "zero turns the fit off")
+	_controls.touch_button_fraction = 0.001
+	assert_eq(_controls.get_effective_scale(), 1.0, "and a fraction a button already covers changes nothing")
+
+
+## A thumb is not a pointer: every button takes a finger that slides onto it, and its hit area is the whole
+## of the drawn art rather than a smaller disc inside it. The corner containers ignore the pointer, so a touch
+## between two buttons reaches the game instead of dying on an invisible rectangle.
+func test_touch_hit_areas_cover_the_art_and_take_a_sliding_thumb() -> void:
+	_controls = _make_controls()
+	for button: TouchScreenButton in _controls.all_buttons:
+		assert_true(button.passby_press, "%s takes a finger that slides onto it" % button.name)
+		if button.shape is CircleShape2D:
+			assert_gte((button.shape as CircleShape2D).radius, Controls.BUTTON_SIZE / 2.0, "%s's hit area covers its art" % button.name)
+		elif button.shape is RectangleShape2D:
+			assert_gte((button.shape as RectangleShape2D).size.x, 48.0, "%s's hit area covers its key face" % button.name)
+	for cluster: Control in _controls._clusters:
+		assert_eq(cluster.mouse_filter, Control.MOUSE_FILTER_IGNORE, "%s lets touches through to the game" % cluster.name)

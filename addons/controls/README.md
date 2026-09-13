@@ -191,6 +191,29 @@ those four textures, which is a thing it would do for its keyboard players anywa
 It applies to touch only. A pad player has a real stick in their hands, and a keyboard player is drawn their
 own keys either way, so neither changes.
 
+### Size, and sizing for touch
+
+The HUD has a size of its own, separate from whatever the project's stretch mode does to the rest of the
+game's UI. `hud_scale` draws the whole thing bigger or smaller, and it does so corner by corner: each of the
+five clusters - bottom left, bottom right, top left, top centre, top right - is anchored to its corner and
+pivots there, so the bottom right grows up and to the left and stays in the bottom right. Node paths do not
+change, so a scene that inherits `controls.tscn` is unaffected. It shows in the editor as it is typed.
+
+On a touchscreen the HUD also fits itself to the glass. `touch_button_fraction` is how big a face button has
+to be as a fraction of the shorter side of the window in real pixels, a tenth by default, and on touch the
+HUD grows until it is. The window is measured through whatever stretch the project applies, so the result is
+the same fraction of the screen whether the game stretches a 1280x800 canvas or draws pixel for pixel, and it
+is measured again when the window resizes or the phone turns. The fit only ever grows: a game that has set
+`hud_scale` bigger than the fraction asks for keeps its size. It is touch only - a pad or keyboard player's
+HUD is `hud_scale` and nothing more - and zero turns it off. `get_effective_scale()` is what the corners are
+drawn at right now.
+
+Two smaller things are for thumbs. Every button's hit area covers the whole of its art, a 64 pixel disc on a
+face button, a 48 pixel square on a key and the full arm of the d-pad cross, where it used to be a smaller
+shape inside the picture; and every button has `passby_press`, so a finger that slides from one button onto
+the next presses it without lifting. The corner containers ignore the pointer, so a touch that lands between
+two buttons reaches the game rather than dying on an invisible rectangle.
+
 The keyboard art is exported too, one texture per state per slot, so a project that binds different keys than
 the defaults shows its own. The demo does exactly that. That covers the whole keyboard set: the face buttons,
 the shoulders and triggers, and also the stick and d-pad keys through `keyboard_mouse_move_*`,

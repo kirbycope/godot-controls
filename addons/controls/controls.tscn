@@ -135,22 +135,22 @@
 [ext_resource type="Texture2D" uid="uid://dcxj4mkcfgpva" path="res://addons/controls/assets/kenney_nl/Icons/Input Prompts/PlayStation Series/Vector/playstation_trigger_r2_alternative.svg" id="101_y0ckb"]
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_rs4nb"]
-points = PackedVector2Array(-9, -9, -9, -24, 9, -24, 9, -9, 0, 0)
+points = PackedVector2Array(-12, -12, -12, -32, 12, -32, 12, -12, 0, 0)
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_kwisa"]
-points = PackedVector2Array(-9, 9, -9, 24, 9, 24, 9, 9, 0, 0)
+points = PackedVector2Array(-12, 12, -12, 32, 12, 32, 12, 12, 0, 0)
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_qrmb0"]
-points = PackedVector2Array(-9, 9, -24, 9, -24, -9, -9, -9, 0, 0)
+points = PackedVector2Array(-12, 12, -32, 12, -32, -12, -12, -12, 0, 0)
 
 [sub_resource type="LabelSettings" id="LabelSettings_xf6l6"]
 line_spacing = 0.0
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_wwnia"]
-points = PackedVector2Array(9, 9, 24, 9, 24, -9, 9, -9, 0, 0)
+points = PackedVector2Array(12, 12, 32, 12, 32, -12, 12, -12, 0, 0)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_rs4nb"]
-radius = 24.0
+radius = 32.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xf6l6"]
 content_margin_left = 0.0
@@ -178,19 +178,19 @@ corner_radius_bottom_left = 10000
 corner_detail = 20
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sp4yc"]
-size = Vector2(40, 40)
+size = Vector2(48, 48)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wwnia"]
-radius = 24.0
+radius = 32.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_qrmb0"]
-radius = 24.0
+radius = 32.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_xf6l6"]
-radius = 24.0
+radius = 32.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_q7kt0"]
-radius = 24.0
+radius = 32.0
 
 [node name="Controls" type="CanvasLayer" unique_id=1181235604]
 script = ExtResource("1_f8ygc")
@@ -307,6 +307,8 @@ anchor_bottom = 1.0
 offset_top = -320.0
 offset_right = 320.0
 grow_vertical = 0
+pivot_offset = Vector2(0, 320)
+mouse_filter = 2
 
 [node name="DPadBase" type="TextureRect" parent="BottomLeft" unique_id=861224565]
 layout_mode = 0
@@ -323,6 +325,7 @@ scale = Vector2(2, 2)
 texture_normal = ExtResource("52_iccxp")
 texture_pressed = ExtResource("53_1mwrh")
 shape = SubResource("ConvexPolygonShape2D_rs4nb")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton11" unique_id=724217657]
 custom_maximum_size = Vector2(96, 49)
@@ -345,6 +348,7 @@ scale = Vector2(2, 2)
 texture_normal = ExtResource("52_iccxp")
 texture_pressed = ExtResource("54_uepbl")
 shape = SubResource("ConvexPolygonShape2D_kwisa")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton12" unique_id=1859234343]
 custom_maximum_size = Vector2(96, -1)
@@ -366,6 +370,7 @@ scale = Vector2(2, 2)
 texture_normal = ExtResource("52_iccxp")
 texture_pressed = ExtResource("55_8gkmr")
 shape = SubResource("ConvexPolygonShape2D_qrmb0")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton13" unique_id=222978466]
 custom_maximum_size = Vector2(96, 49)
@@ -389,6 +394,7 @@ scale = Vector2(2, 2)
 texture_normal = ExtResource("52_iccxp")
 texture_pressed = ExtResource("56_t8hsd")
 shape = SubResource("ConvexPolygonShape2D_wwnia")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton14" unique_id=1667560914]
 custom_maximum_size = Vector2(96, 49)
@@ -410,6 +416,7 @@ position = Vector2(0, 256)
 texture_normal = ExtResource("57_tfvmf")
 texture_pressed = ExtResource("58_tnbvb")
 shape = SubResource("CircleShape2D_rs4nb")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/JoypadButton7" unique_id=433012390]
 custom_maximum_size = Vector2(56, 56)
@@ -471,6 +478,7 @@ position = Vector2(80, 40)
 texture_normal = ExtResource("60_eenuy")
 texture_pressed = ExtResource("61_1p6a3")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/KeyW" unique_id=1116212167]
 custom_maximum_size = Vector2(96, 49)
@@ -495,6 +503,7 @@ position = Vector2(32, 88)
 texture_normal = ExtResource("62_sxdkc")
 texture_pressed = ExtResource("63_10i3g")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/KeyA" unique_id=1788475514]
 custom_maximum_size = Vector2(96, 49)
@@ -516,6 +525,7 @@ position = Vector2(80, 88)
 texture_normal = ExtResource("64_g0qd0")
 texture_pressed = ExtResource("65_tqkpd")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/KeyS" unique_id=1378395330]
 custom_maximum_size = Vector2(96, 49)
@@ -539,6 +549,7 @@ position = Vector2(128, 88)
 texture_normal = ExtResource("66_sttyu")
 texture_pressed = ExtResource("67_kc587")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/KeyD" unique_id=864247759]
 custom_maximum_size = Vector2(96, 49)
@@ -562,6 +573,7 @@ position = Vector2(224, 192)
 texture_normal = ExtResource("68_y0ckb")
 texture_pressed = ExtResource("69_c88j6")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/KeyI" unique_id=1517276430]
 custom_maximum_size = Vector2(96, 49)
@@ -583,6 +595,7 @@ position = Vector2(176, 240)
 texture_normal = ExtResource("70_thqgb")
 texture_pressed = ExtResource("71_fqvfc")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/KeyJ" unique_id=1359570107]
 custom_maximum_size = Vector2(96, 49)
@@ -605,6 +618,7 @@ position = Vector2(224, 240)
 texture_normal = ExtResource("72_tr8h5")
 texture_pressed = ExtResource("73_l1jde")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/KeyK" unique_id=1993763106]
 anchors_preset = 5
@@ -623,6 +637,7 @@ position = Vector2(272, 240)
 texture_normal = ExtResource("74_bcmhq")
 texture_pressed = ExtResource("75_msk0v")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomLeft/KeyL" unique_id=1224760024]
 custom_maximum_size = Vector2(96, 49)
@@ -649,6 +664,8 @@ offset_left = -320.0
 offset_top = -320.0
 grow_horizontal = 0
 grow_vertical = 0
+pivot_offset = Vector2(320, 320)
+mouse_filter = 2
 
 [node name="JoypadButton0" type="TouchScreenButton" parent="BottomRight" unique_id=552765389]
 position = Vector2(192, 128)
@@ -743,6 +760,7 @@ position = Vector2(256, 256)
 texture_normal = ExtResource("76_a0h6d")
 texture_pressed = ExtResource("77_iikrr")
 shape = SubResource("CircleShape2D_rs4nb")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/JoypadButton8" unique_id=1914557801]
 custom_maximum_size = Vector2(56, 56)
@@ -800,6 +818,7 @@ position = Vector2(64, 168)
 texture_normal = ExtResource("78_ijvwe")
 texture_pressed = ExtResource("79_7odnn")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/KeyUp" unique_id=1644234347]
 custom_maximum_size = Vector2(96, 49)
@@ -824,6 +843,7 @@ position = Vector2(16, 216)
 texture_normal = ExtResource("80_w56jl")
 texture_pressed = ExtResource("81_k80tt")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/KeyLeft" unique_id=156485861]
 custom_maximum_size = Vector2(96, 49)
@@ -845,6 +865,7 @@ position = Vector2(64, 216)
 texture_normal = ExtResource("82_08dr4")
 texture_pressed = ExtResource("83_ay47k")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/KeyDown" unique_id=842180098]
 custom_maximum_size = Vector2(96, 49)
@@ -867,6 +888,7 @@ position = Vector2(112, 216)
 texture_normal = ExtResource("84_o5u1y")
 texture_pressed = ExtResource("85_osf25")
 shape = SubResource("RectangleShape2D_sp4yc")
+passby_press = true
 
 [node name="Label" type="Label" parent="BottomRight/KeyRight" unique_id=1670398670]
 custom_maximum_size = Vector2(96, 49)
@@ -888,6 +910,7 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 64.0
 offset_bottom = 128.0
+mouse_filter = 2
 
 [node name="JoypadButton9" type="TouchScreenButton" parent="TopLeft" unique_id=70522918]
 texture_normal = ExtResource("86_6rw3k")
@@ -942,11 +965,14 @@ offset_left = -96.0
 offset_right = 96.0
 offset_bottom = 64.0
 grow_horizontal = 2
+pivot_offset = Vector2(96, 0)
+mouse_filter = 2
 
 [node name="JoypadButton4" type="TouchScreenButton" parent="TopCenter" unique_id=1885477471]
 texture_normal = ExtResource("90_y4q6c")
 texture_pressed = ExtResource("91_d88iv")
 shape = SubResource("CircleShape2D_rs4nb")
+passby_press = true
 
 [node name="Label" type="Label" parent="TopCenter/JoypadButton4" unique_id=576494979]
 custom_maximum_size = Vector2(96, 49)
@@ -967,6 +993,7 @@ position = Vector2(64, 0)
 texture_normal = ExtResource("92_wqt5i")
 texture_pressed = ExtResource("93_d78lw")
 shape = SubResource("CircleShape2D_rs4nb")
+passby_press = true
 
 [node name="Label" type="Label" parent="TopCenter/JoypadButton15" unique_id=1273655075]
 anchors_preset = 7
@@ -988,6 +1015,7 @@ position = Vector2(128, 0)
 texture_normal = ExtResource("94_24ci8")
 texture_pressed = ExtResource("95_ms6j8")
 shape = SubResource("CircleShape2D_q7kt0")
+passby_press = true
 
 [node name="Label" type="Label" parent="TopCenter/JoypadButton6" unique_id=1741042731]
 custom_maximum_size = Vector2(96, 49)
@@ -1012,6 +1040,8 @@ anchor_right = 1.0
 offset_left = -64.0
 offset_bottom = 128.0
 grow_horizontal = 0
+pivot_offset = Vector2(64, 0)
+mouse_filter = 2
 
 [node name="JoypadButton10" type="TouchScreenButton" parent="TopRight" unique_id=1763078092]
 texture_normal = ExtResource("96_b4cxv")
