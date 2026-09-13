@@ -273,6 +273,34 @@ func test_keyboard_and_joypad_sets_swap() -> void:
 	assert_true(_controls.dpad_base.visible, "and so does the d-pad cross")
 
 
+## A virtual stick is analogue, and in a game that reads four directions and nothing in between that works
+## against the player: a finger a fraction off the axis is a direction the game cannot express. Such a game
+## asks for buttons instead, and gets the four movement buttons where the stick was.
+func test_touch_movement_can_be_buttons_instead_of_the_stick() -> void:
+	_controls = _make_controls()
+
+	_controls.current_input_type = Controls.InputType.TOUCH
+	assert_true(_controls.left_joystick.visible, "By default a touchscreen gets the stick")
+	assert_false(_controls.key_w.visible, "and not the movement buttons")
+
+	_controls.touch_movement = Controls.TouchMovement.BUTTONS
+	assert_false(_controls.left_joystick.visible, "Asking for buttons takes the stick off")
+	assert_true(_controls.key_w.visible, "and puts the four movement buttons up")
+	assert_true(_controls.key_a.visible and _controls.key_s.visible and _controls.key_d.visible,
+			"all four of them, or the player can only go one way")
+	assert_eq(_controls.key_a.action, _controls.action_move_left, "driving the movement actions")
+
+	# Only touch. A pad player has a real stick in their hands, and a keyboard player is drawn their own keys
+	# either way, so neither is changed by the setting.
+	_controls.current_input_type = Controls.InputType.SONY
+	assert_true(_controls.left_joystick.visible, "A pad still gets the stick drawn for it")
+	assert_false(_controls.key_w.visible, "and not the keyboard set")
+
+	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
+	assert_false(_controls.left_joystick.visible, "A keyboard never gets the stick")
+	assert_true(_controls.key_w.visible, "and always gets its own keys")
+
+
 ## A click is the only signal a mouse player gives on a HUD that starts out showing touch controls, so it has
 ## to count on its own rather than only while the mouse is captured.
 func test_a_mouse_click_swaps_to_the_keyboard_set() -> void:

@@ -21,6 +21,12 @@ signal screenshot_taken(path: String) ## A screenshot was saved. On the web this
 
 const SCREENSHOT_DIR: String = "user://screenshots" ## Where [method take_screenshot] saves, off the web.
 
+## What the bottom left offers a touchscreen player for movement. See [member touch_movement].
+enum TouchMovement {
+	JOYSTICK, ## The virtual stick.
+	BUTTONS, ## The four movement buttons - the same nodes the keyboard set draws as its movement keys.
+}
+
 enum InputType {
 	KEYBOARD_MOUSE,
 	MICROSOFT,
@@ -62,6 +68,25 @@ const SLOT_EVENTS: Dictionary = {
 }
 
 @export var input_deadzone: float = 0.05 ## Address joystick drift by setting a deadzone threshold for joystick motion inputs
+
+## What a touchscreen player gets for movement: the virtual stick, or the four movement buttons.
+##
+## A stick is analogue, and in a game that reads four directions and nothing in between that works against
+## the player - a finger a fraction off the axis is a direction the game cannot express, so the stick feels
+## finicky where a button would not. Such a game sets [constant TouchMovement.BUTTONS] and gets the four
+## buttons of the movement slots instead, with the stick taken off the screen.
+##
+## Only touch. A pad player has a real stick in their hands and a keyboard player is drawn their own keys,
+## so neither is affected.
+@export var touch_movement: TouchMovement = TouchMovement.JOYSTICK:
+	set(value):
+		touch_movement = value
+		if not is_node_ready():
+			return
+		if Engine.is_editor_hint():
+			preview_in_editor()
+		else:
+			update_input_ui()
 ## Whether the share button saves a PNG of the screen when it is pressed. It is the one button here the HUD
 ## acts on itself, because capturing the screen is not something a game has to be asked about; turn it off in a
 ## project that captures the screen its own way, or blank [member action_button_15] to drop the button entirely.
@@ -388,6 +413,11 @@ var prompt_action_label: String = ""
 ## Controls shown only for controller/touch input (the keyboard set is shown instead for keyboard/mouse).
 @onready var _joypad_only: Array[CanvasItem] = [dpad_base, joypad_button_11, joypad_button_12, joypad_button_13, joypad_button_14, left_joystick, right_joystick]
 @onready var _keyboard_only: Array[CanvasItem] = [key_w, key_a, key_s, key_d, key_i, key_j, key_k, key_l, key_up, key_left, key_down, key_right]
+
+## The four buttons of the movement slots, which the keyboard set draws as its movement keys and which a
+## touchscreen player gets instead of the stick when [member touch_movement] asks for them.
+@onready var _movement_buttons: Array[CanvasItem] = [key_w, key_a, key_s, key_d]
+
 
 var current_input_type: InputType = InputType.TOUCH:
 	set(value):
@@ -737,19 +767,31 @@ func _process(_delta: float) -> void:
 		preview_in_editor()
 
 
+## Whether [param item] belongs on screen for the device being played on. The keyboard set and the joypad
+## set are shown one or the other, except for the movement buttons and the stick, which swap places on a
+## touchscreen when the game has asked for buttons rather than a stick.
+func _belongs_on_screen(item: CanvasItem) -> bool:
+	var is_keyboard: bool = current_input_type == InputType.KEYBOARD_MOUSE
+	var buttons_for_touch: bool = touch_movement == TouchMovement.BUTTONS and current_input_type == InputType.TOUCH
+	if item == left_joystick:
+		return not is_keyboard and not buttons_for_touch
+	if _movement_buttons.has(item):
+		return is_keyboard or buttons_for_touch
+	if _joypad_only.has(item):
+		return not is_keyboard
+	if _keyboard_only.has(item):
+		return is_keyboard
+	return true
+
+
 ## Shows the editor what will actually be on screen: a slot the game has not mapped is hidden, and the
 ## keyboard or the joypad set is shown for [member current_input_type], exactly as [method update_input_ui]
 ## decides it at runtime. Nothing is registered, no texture is swapped and no action is written to a button,
 ## and a visibility that already matches is left alone, so an untouched scene is not marked modified.
 func preview_in_editor() -> void:
 	var unmapped: Array[CanvasItem] = unmapped_items()
-	var is_keyboard: bool = current_input_type == InputType.KEYBOARD_MOUSE
 	for item: CanvasItem in _previewable_items():
-		var wanted: bool = not unmapped.has(item)
-		if _joypad_only.has(item):
-			wanted = wanted and not is_keyboard
-		elif _keyboard_only.has(item):
-			wanted = wanted and is_keyboard
+		var wanted: bool = not unmapped.has(item) and _belongs_on_screen(item)
 		if item.visible != wanted:
 			item.visible = wanted
 
@@ -795,11 +837,10 @@ func update_input_ui() -> void:
 		_swappable_buttons[i].texture_pressed = textures[i * 2 + 1]
 		_normal_textures[_swappable_buttons[i]] = textures[i * 2]
 
-	var is_keyboard: bool = current_input_type == InputType.KEYBOARD_MOUSE
 	for item: CanvasItem in _joypad_only:
-		item.visible = not is_keyboard
+		item.visible = _belongs_on_screen(item)
 	for item: CanvasItem in _keyboard_only:
-		item.visible = is_keyboard
+		item.visible = _belongs_on_screen(item)
 
 	# Show each button pressed or normal to match the actions currently held
 	for button: TouchScreenButton in all_buttons:

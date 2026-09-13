@@ -174,6 +174,23 @@ moves, which is what a game listens to when its labels differ per device.
 Touch borrows the Xbox art. `rumble(weak, strong, seconds)` rumbles the pad and returns `false` without doing
 anything on keyboard or touch.
 
+### Movement on a touchscreen
+
+`touch_movement` picks what the bottom left offers a touchscreen player: `JOYSTICK`, the virtual stick, which
+is the default; or `BUTTONS`, the four movement buttons, with the stick taken off the screen.
+
+Set it to `BUTTONS` in a game that reads four directions and nothing in between. A stick is analogue, so a
+finger a fraction off the axis is a direction such a game cannot express, and the control feels finicky
+through no fault of the player. Four buttons cannot be a fraction off anything.
+
+The buttons it shows are the movement slots - the same nodes the keyboard set draws as its movement keys - so
+they already carry `action_move_up` and the rest, and the key art a project has set through
+`keyboard_mouse_move_*` is what a touch player sees. A project that wants arrows there rather than WASD sets
+those four textures, which is a thing it would do for its keyboard players anyway.
+
+It applies to touch only. A pad player has a real stick in their hands, and a keyboard player is drawn their
+own keys either way, so neither changes.
+
 The keyboard art is exported too, one texture per state per slot, so a project that binds different keys than
 the defaults shows its own. The demo does exactly that. That covers the whole keyboard set: the face buttons,
 the shoulders and triggers, and also the stick and d-pad keys through `keyboard_mouse_move_*`,
