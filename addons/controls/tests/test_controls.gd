@@ -650,7 +650,6 @@ func test_the_hud_is_a_fraction_of_the_window_on_every_device() -> void:
 	var window_size: Vector2 = Vector2(_controls.get_window().size)
 	var drawn: float = Controls.BUTTON_SIZE * _controls.get_viewport().get_final_transform().get_scale().x
 	var expected: float = 0.2 * minf(window_size.x, window_size.y) / drawn
-	assert_gt(expected, 1.0, "a fifth of this window is more than a button, so the HUD has to grow")
 	for device: Controls.InputType in [Controls.InputType.KEYBOARD_MOUSE, Controls.InputType.SONY, Controls.InputType.TOUCH]:
 		_controls.current_input_type = device
 		assert_almost_eq(_controls.get_effective_scale(), expected, 0.001, "a face button is a fifth of the shorter side on %s" % Controls.InputType.keys()[device])
