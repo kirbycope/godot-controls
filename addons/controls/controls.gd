@@ -51,10 +51,10 @@ const SLOT_EVENTS: Dictionary = {
 	"button_8": {"buttons": [JOY_BUTTON_RIGHT_STICK]},
 	"button_9": {"buttons": [JOY_BUTTON_LEFT_SHOULDER]},
 	"button_10": {"buttons": [JOY_BUTTON_RIGHT_SHOULDER]},
-	"button_11": {"buttons": [JOY_BUTTON_DPAD_UP]},
-	"button_12": {"buttons": [JOY_BUTTON_DPAD_DOWN]},
-	"button_13": {"buttons": [JOY_BUTTON_DPAD_LEFT]},
-	"button_14": {"buttons": [JOY_BUTTON_DPAD_RIGHT]},
+	"button_11": {"buttons": [JOY_BUTTON_DPAD_UP], "keys": [KEY_I]},
+	"button_12": {"buttons": [JOY_BUTTON_DPAD_DOWN], "keys": [KEY_K]},
+	"button_13": {"buttons": [JOY_BUTTON_DPAD_LEFT], "keys": [KEY_J]},
+	"button_14": {"buttons": [JOY_BUTTON_DPAD_RIGHT], "keys": [KEY_L]},
 	"button_15": {"buttons": [JOY_BUTTON_MISC1], "keys": [KEY_PRINT]},
 	"axis_4_plus": {"axes": [[JOY_AXIS_TRIGGER_LEFT, 1.0]]},
 	"axis_5_plus": {"axes": [[JOY_AXIS_TRIGGER_RIGHT, 1.0]]},
@@ -66,6 +66,21 @@ const SLOT_EVENTS: Dictionary = {
 	"look_down": {"keys": [KEY_DOWN], "axes": [[JOY_AXIS_RIGHT_Y, 1.0]]},
 	"look_left": {"keys": [KEY_LEFT], "axes": [[JOY_AXIS_RIGHT_X, -1.0]]},
 	"look_right": {"keys": [KEY_RIGHT], "axes": [[JOY_AXIS_RIGHT_X, 1.0]]},
+}
+
+## The slots whose art swaps per input device. The button of each is [code]joypad_<slot>[/code] and its art
+## is [code]<prefix>_<slot>_normal[/code] and [code]_pressed[/code], so this list is the only order there is.
+const SWAPPABLE_SLOTS: PackedStringArray = [
+	"button_0", "button_1", "button_2", "button_3", "button_4", "button_15", "button_6",
+	"button_7", "button_8", "button_9", "button_10", "axis_4_plus", "axis_5_plus",
+]
+
+## The export prefix that holds each input type's art. Touch has none and borrows Microsoft's.
+const VENDOR_PREFIXES: Dictionary[InputType, String] = {
+	InputType.KEYBOARD_MOUSE: "keyboard_mouse",
+	InputType.MICROSOFT: "microsoft",
+	InputType.NINTENDO: "nintendo",
+	InputType.SONY: "sony",
 }
 
 @export var input_deadzone: float = 0.05 ## Address joystick drift by setting a deadzone threshold for joystick motion inputs
@@ -391,50 +406,10 @@ var prompt_action_label: String = ""
 	key_l_label, key_up_label, key_left_label, key_down_label, key_right_label,
 	left_joystick_label, right_joystick_label,
 ]
-## Buttons whose textures swap per input device, in the order of the [member _vendor_textures] pairs.
-@onready var _swappable_buttons: Array[TouchScreenButton] = [
-	joypad_button_0, joypad_button_1, joypad_button_2, joypad_button_3, joypad_button_4, joypad_button_15,
-	joypad_button_6, joypad_button_7, joypad_button_8, joypad_button_9, joypad_button_10, joypad_axis_4_plus, joypad_axis_5_plus,
-]
-## Normal/pressed texture pairs per input type, in [member _swappable_buttons] order (touch reuses Microsoft).
-@onready var _vendor_textures: Dictionary[InputType, Array] = {
-	InputType.KEYBOARD_MOUSE: [
-		keyboard_mouse_button_0_normal, keyboard_mouse_button_0_pressed, keyboard_mouse_button_1_normal, keyboard_mouse_button_1_pressed,
-		keyboard_mouse_button_2_normal, keyboard_mouse_button_2_pressed, keyboard_mouse_button_3_normal, keyboard_mouse_button_3_pressed,
-		keyboard_mouse_button_4_normal, keyboard_mouse_button_4_pressed, keyboard_mouse_button_15_normal, keyboard_mouse_button_15_pressed,
-		keyboard_mouse_button_6_normal, keyboard_mouse_button_6_pressed, keyboard_mouse_button_7_normal, keyboard_mouse_button_7_pressed,
-		keyboard_mouse_button_8_normal, keyboard_mouse_button_8_pressed, keyboard_mouse_button_9_normal, keyboard_mouse_button_9_pressed,
-		keyboard_mouse_button_10_normal, keyboard_mouse_button_10_pressed, keyboard_mouse_axis_4_plus_normal, keyboard_mouse_axis_4_plus_pressed,
-		keyboard_mouse_axis_5_plus_normal, keyboard_mouse_axis_5_plus_pressed,
-	],
-	InputType.MICROSOFT: [
-		microsoft_button_0_normal, microsoft_button_0_pressed, microsoft_button_1_normal, microsoft_button_1_pressed,
-		microsoft_button_2_normal, microsoft_button_2_pressed, microsoft_button_3_normal, microsoft_button_3_pressed,
-		microsoft_button_4_normal, microsoft_button_4_pressed, microsoft_button_15_normal, microsoft_button_15_pressed,
-		microsoft_button_6_normal, microsoft_button_6_pressed, microsoft_button_7_normal, microsoft_button_7_pressed,
-		microsoft_button_8_normal, microsoft_button_8_pressed, microsoft_button_9_normal, microsoft_button_9_pressed,
-		microsoft_button_10_normal, microsoft_button_10_pressed, microsoft_axis_4_plus_normal, microsoft_axis_4_plus_pressed,
-		microsoft_axis_5_plus_normal, microsoft_axis_5_plus_pressed,
-	],
-	InputType.NINTENDO: [
-		nintendo_button_0_normal, nintendo_button_0_pressed, nintendo_button_1_normal, nintendo_button_1_pressed,
-		nintendo_button_2_normal, nintendo_button_2_pressed, nintendo_button_3_normal, nintendo_button_3_pressed,
-		nintendo_button_4_normal, nintendo_button_4_pressed, nintendo_button_15_normal, nintendo_button_15_pressed,
-		nintendo_button_6_normal, nintendo_button_6_pressed, nintendo_button_7_normal, nintendo_button_7_pressed,
-		nintendo_button_8_normal, nintendo_button_8_pressed, nintendo_button_9_normal, nintendo_button_9_pressed,
-		nintendo_button_10_normal, nintendo_button_10_pressed, nintendo_axis_4_plus_normal, nintendo_axis_4_plus_pressed,
-		nintendo_axis_5_plus_normal, nintendo_axis_5_plus_pressed,
-	],
-	InputType.SONY: [
-		sony_button_0_normal, sony_button_0_pressed, sony_button_1_normal, sony_button_1_pressed,
-		sony_button_2_normal, sony_button_2_pressed, sony_button_3_normal, sony_button_3_pressed,
-		sony_button_4_normal, sony_button_4_pressed, sony_button_15_normal, sony_button_15_pressed,
-		sony_button_6_normal, sony_button_6_pressed, sony_button_7_normal, sony_button_7_pressed,
-		sony_button_8_normal, sony_button_8_pressed, sony_button_9_normal, sony_button_9_pressed,
-		sony_button_10_normal, sony_button_10_pressed, sony_axis_4_plus_normal, sony_axis_4_plus_pressed,
-		sony_axis_5_plus_normal, sony_axis_5_plus_pressed,
-	],
-}
+## The buttons of [constant SWAPPABLE_SLOTS], in that order, filled in [method _ready].
+var _swappable_buttons: Array[TouchScreenButton] = []
+## Normal/pressed texture pairs per input type, in [member _swappable_buttons] order, filled in [method _ready].
+var _vendor_textures: Dictionary[InputType, Array] = {}
 ## Controls shown only for controller/touch input (the keyboard set is shown instead for keyboard/mouse).
 @onready var _joypad_only: Array[CanvasItem] = [dpad_base, joypad_button_11, joypad_button_12, joypad_button_13, joypad_button_14, left_joystick, right_joystick]
 @onready var _keyboard_only: Array[CanvasItem] = [key_w, key_a, key_s, key_d, key_i, key_j, key_k, key_l, key_up, key_left, key_down, key_right]
@@ -442,6 +417,14 @@ var prompt_action_label: String = ""
 ## The four buttons of the movement slots, which the keyboard set draws as its movement keys and which a
 ## touchscreen player gets instead of the stick when [member touch_movement] asks for them.
 @onready var _movement_buttons: Array[CanvasItem] = [key_w, key_a, key_s, key_d]
+
+## A joypad label and the key label that does the same job, so [method set_labels] can name either and the
+## other follows. The d-pad and [I], [J], [K], [L] are the pairs; the sticks mirror one way only, since a key
+## is one of four and the stick is all of them.
+@onready var _mirrored_labels: Array[Array] = [
+	[joypad_button_11_label, key_i_label], [joypad_button_12_label, key_k_label],
+	[joypad_button_13_label, key_j_label], [joypad_button_14_label, key_l_label],
+]
 
 
 var current_input_type: InputType = InputType.TOUCH:
@@ -456,6 +439,7 @@ var _label_texts: Dictionary[Label, String] = {} ## Default label text per label
 var _unbound: Array[CanvasItem] = [] ## Buttons and sticks whose slot was left blank, so the game does not use them.
 var _prompt_owner: Object = null ## The [ActionPrompt] that claimed [member prompt_action_label]; only it may give it back.
 var _foreign_actions: Dictionary = {} ## Actions the project had declared before this node registered any, which are its own to bind.
+var _pad_device: int = 0 ## The pad the player last pressed, so a rumble reaches the one in their hands rather than the first enumerated.
 
 
 ## Turns every slot into a picker of the catalog's actions when one is set. Godot asks about each
@@ -477,13 +461,29 @@ func _ready() -> void:
 		apply_scale()
 		set_process(true)
 		return
-	set_process(is_multiplayer_authority())
-	set_physics_process(is_multiplayer_authority())
-	set_process_input(is_multiplayer_authority())
+	# A remote player's HUD has no one to show it to: left alone it would sit on top of the local one with its
+	# touch buttons live and register actions for a player who is not here. Its _input goes too, because it
+	# would otherwise redraw a HUD that was never set up.
+	if not is_multiplayer_authority():
+		hide()
+		set_process_input(false)
+		return
+	set_process(false)
 
 	# A project's own key faces go on before anything is cached, so everything downstream - the held-state
 	# swap and update_input_ui - sees them as though the scene had always had them.
 	_apply_keyboard_textures()
+
+	# The swappable buttons and their vendor art are read off the slot names, so the order of both comes from
+	# the one list and nothing has to be kept in step by hand.
+	for slot: String in SWAPPABLE_SLOTS:
+		_swappable_buttons.append(get("joypad_%s" % slot))
+	for input_type: InputType in VENDOR_PREFIXES:
+		var textures: Array = []
+		for slot: String in SWAPPABLE_SLOTS:
+			textures.append(get("%s_%s_normal" % [VENDOR_PREFIXES[input_type], slot]))
+			textures.append(get("%s_%s_pressed" % [VENDOR_PREFIXES[input_type], slot]))
+		_vendor_textures[input_type] = textures
 
 	# Cache the initial normal textures and label texts
 	for button: TouchScreenButton in all_buttons:
@@ -592,6 +592,8 @@ func _apply_slot_actions() -> void:
 		_unbound.append(left_joystick)
 	if action_look_up.is_empty() and action_look_down.is_empty():
 		_unbound.append(right_joystick)
+	if action_button_11.is_empty() and action_button_12.is_empty() and action_button_13.is_empty() and action_button_14.is_empty():
+		_unbound.append(dpad_base)
 
 
 ## Gives every mapped slot an InputMap action bound to the button it stands for, so the addon is a drop-in.
@@ -672,6 +674,11 @@ func _events_for(binding: Dictionary) -> Array[InputEvent]:
 		var mouse_event: InputEventMouseButton = InputEventMouseButton.new()
 		mouse_event.button_index = mouse_button
 		events.append(mouse_event)
+	# A new event is for device 0, and the InputMap only matches an event from the device it was registered
+	# for, so without this a second pad could press every button on the HUD and fire nothing. Minus one is
+	# what the editor's "All Devices" writes; the engine's name for it is not exposed to scripts.
+	for event: InputEvent in events:
+		event.device = -1
 	return events
 
 
@@ -686,16 +693,25 @@ func _input(event: InputEvent) -> void:
 		if event is InputEventMouseButton or Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			current_input_type = InputType.KEYBOARD_MOUSE
 	elif event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > input_deadzone):
+		_pad_device = event.device
 		var joystick_name: String = Input.get_joy_name(event.device).to_lower()
-		# Microsoft [XBox], Nintendo [Switch], or Sony [PlayStation] controller
-		if joystick_name.contains("xinput") or joystick_name.contains("standard"):
-			current_input_type = InputType.MICROSOFT
-		elif joystick_name.contains("nintendo"):
+		# Nintendo [Switch] and Sony [PlayStation] are told by name. Anything else is drawn as an Xbox pad,
+		# because a pad the name gives nothing away about is still a pad, and that is the layout most of them
+		# copy; leaving the keyboard set up for it would be wrong on every button.
+		if joystick_name.contains("nintendo"):
 			current_input_type = InputType.NINTENDO
-		elif joystick_name.contains("dualsense wireless controller") or joystick_name.contains("ps"):
+		elif joystick_name.contains("playstation") or joystick_name.contains("dualshock") or joystick_name.contains("dualsense") or joystick_name.contains("sony"):
 			current_input_type = InputType.SONY
+		else:
+			current_input_type = InputType.MICROSOFT
 	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
 		current_input_type = InputType.TOUCH
+
+	# A text field with focus owns the keys: what is typed into a chat box is not a press of anything on the
+	# HUD, and it is certainly not a screenshot.
+	var focus: Control = get_viewport().gui_get_focus_owner()
+	if focus is LineEdit or focus is TextEdit:
+		return
 
 	# Motion events are never button presses; only press/release events update the pressed visuals
 	if event is InputEventMouseMotion or event is InputEventScreenDrag:
@@ -761,22 +777,11 @@ func set_labels(label_texts: Dictionary) -> void:
 		final_texts[key_s_label] = final_texts[left_joystick_label]
 	if right_joystick_label in final_texts and not key_down_label in final_texts:
 		final_texts[key_down_label] = final_texts[right_joystick_label]
-	if joypad_button_12_label in final_texts and not key_k_label in final_texts:
-		final_texts[key_k_label] = final_texts[joypad_button_12_label]
-	if key_k_label in final_texts and not joypad_button_12_label in final_texts:
-		final_texts[joypad_button_12_label] = final_texts[key_k_label]
-	if joypad_button_11_label in final_texts and not key_i_label in final_texts:
-		final_texts[key_i_label] = final_texts[joypad_button_11_label]
-	if key_i_label in final_texts and not joypad_button_11_label in final_texts:
-		final_texts[joypad_button_11_label] = final_texts[key_i_label]
-	if joypad_button_13_label in final_texts and not key_j_label in final_texts:
-		final_texts[key_j_label] = final_texts[joypad_button_13_label]
-	if key_j_label in final_texts and not joypad_button_13_label in final_texts:
-		final_texts[joypad_button_13_label] = final_texts[key_j_label]
-	if joypad_button_14_label in final_texts and not key_l_label in final_texts:
-		final_texts[key_l_label] = final_texts[joypad_button_14_label]
-	if key_l_label in final_texts and not joypad_button_14_label in final_texts:
-		final_texts[joypad_button_14_label] = final_texts[key_l_label]
+	for pair: Array in _mirrored_labels:
+		if pair[0] in final_texts and not pair[1] in final_texts:
+			final_texts[pair[1]] = final_texts[pair[0]]
+		elif pair[1] in final_texts and not pair[0] in final_texts:
+			final_texts[pair[0]] = final_texts[pair[1]]
 
 	for label: Label in _label_texts:
 		if label in final_texts:
@@ -840,6 +845,8 @@ func unmapped_items() -> Array[CanvasItem]:
 		unmapped.append(left_joystick)
 	if action_look_up.is_empty() and action_look_down.is_empty():
 		unmapped.append(right_joystick)
+	if action_button_11.is_empty() and action_button_12.is_empty() and action_button_13.is_empty() and action_button_14.is_empty():
+		unmapped.append(dpad_base)
 	return unmapped
 
 
@@ -939,5 +946,5 @@ func take_screenshot() -> String:
 func rumble(weak: float, strong: float, seconds: float) -> bool:
 	if current_input_type in [InputType.KEYBOARD_MOUSE, InputType.TOUCH]:
 		return false
-	Input.start_joy_vibration(0, weak, strong, seconds)
+	Input.start_joy_vibration(_pad_device, weak, strong, seconds)
 	return true

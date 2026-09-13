@@ -10,6 +10,7 @@ const KEY_ART: String = "res://addons/controls/assets/kenney_nl/Icons/Input Prom
 ## Action names invented for these tests, removed again in [method after_each] so one test cannot bind another.
 const TEST_ACTIONS: PackedStringArray = [
 	"test_interact", "test_attack", "test_aim", "test_menu", "test_look_up", "test_look_down",
+	"test_dpad_up", "test_dpad_down", "test_dpad_left", "test_dpad_right", "test_puppet",
 ]
 
 var _controls: Controls
@@ -97,6 +98,22 @@ func test_a_mapped_slot_is_shown() -> void:
 	assert_true(_controls.joypad_button_2.visible, "Mapping the left face button brings it back")
 
 
+## The cross is drawn for the d-pad buttons that sit on it, so with all four blanked there is nothing to draw
+## it for, in the game and in the editor preview alike. One d-pad button left is still a d-pad.
+func test_blanking_the_whole_dpad_takes_the_cross_with_it() -> void:
+	_controls = _make_controls({
+		"action_button_11": &"", "action_button_12": &"", "action_button_13": &"", "action_button_14": &"",
+	})
+	_controls.current_input_type = Controls.InputType.SONY
+	assert_false(_controls.dpad_base.visible, "A pad shows no cross for a d-pad the game does not use")
+	assert_true(_controls.unmapped_items().has(_controls.dpad_base), "and the editor preview hides it too")
+
+	_controls = _make_controls({"action_button_12": &"", "action_button_13": &"", "action_button_14": &""})
+	_controls.current_input_type = Controls.InputType.SONY
+	assert_true(_controls.dpad_base.visible, "One button left is still a d-pad")
+	assert_false(_controls.unmapped_items().has(_controls.dpad_base), "in the editor too")
+
+
 ## The whole point of the drop-in: a project names an action it never declared and the addon binds it to the
 ## button that slot stands for.
 func test_an_unknown_action_is_registered_on_its_own_button() -> void:
@@ -106,6 +123,18 @@ func test_an_unknown_action_is_registered_on_its_own_button() -> void:
 	var pressed: InputEventJoypadButton = InputEventJoypadButton.new()
 	pressed.button_index = JOY_BUTTON_A
 	assert_true(InputMap.action_has_event("test_interact", pressed), "Bound to the button it is drawn on")
+
+
+## An event made in code is for device 0, and the InputMap matches on device, so an action registered that way
+## answered joypad 0 and nothing else: a second player's pad pressed every button and fired nothing.
+func test_a_registered_action_fires_from_any_pad() -> void:
+	_controls = _make_controls({"action_button_0": &"test_interact"})
+	var second_pad: InputEventJoypadButton = InputEventJoypadButton.new()
+	second_pad.device = 1
+	second_pad.button_index = JOY_BUTTON_A
+	second_pad.pressed = true
+	assert_true(InputMap.event_is_action(second_pad, "test_interact"), "The second pad fires it")
+	assert_true(InputMap.action_has_event("test_interact", second_pad), "because the binding is for every device")
 
 
 func test_extra_actions_add_what_the_pad_cannot_describe() -> void:
@@ -149,6 +178,35 @@ func test_the_system_slots_bind_the_keys_their_faces_show() -> void:
 		key_event.physical_keycode = pair[1]
 		assert_true(InputMap.action_has_event(pair[0], key_event),
 			"%s answers to %s" % [pair[0], OS.get_keycode_string(pair[1])])
+
+
+## The d-pad slots draw [I], [J], [K] and [L] as their keyboard faces, so those are the keys they have to answer
+## to, for the same reason the system slots answer to theirs.
+func test_the_dpad_slots_bind_the_keys_their_faces_show() -> void:
+	_controls = _make_controls({
+		"action_button_11": &"test_dpad_up", "action_button_12": &"test_dpad_down",
+		"action_button_13": &"test_dpad_left", "action_button_14": &"test_dpad_right",
+	})
+
+	for pair: Array in [["test_dpad_up", KEY_I], ["test_dpad_down", KEY_K], ["test_dpad_left", KEY_J], ["test_dpad_right", KEY_L]]:
+		var key_event: InputEventKey = InputEventKey.new()
+		key_event.physical_keycode = pair[1]
+		assert_true(InputMap.action_has_event(pair[0], key_event),
+			"%s answers to %s" % [pair[0], OS.get_keycode_string(pair[1])])
+
+
+## A remote player's HUD is a puppet with no one to show it to. Left alone it sat on top of the local HUD with
+## its touch buttons live, and registered actions for a player who is not at this keyboard.
+func test_a_puppet_hud_hides_itself_and_registers_nothing() -> void:
+	var puppet: Controls = CONTROLS_SCENE.instantiate()
+	puppet.action_button_0 = &"test_puppet"
+	puppet.set_multiplayer_authority(42)
+	add_child_autofree(puppet)
+
+	assert_false(puppet.is_multiplayer_authority(), "This peer is 1, so 42 is someone else")
+	assert_false(puppet.visible, "so their HUD is not on this screen")
+	assert_false(puppet.is_processing_input(), "and answers nothing pressed here")
+	assert_false(InputMap.has_action("test_puppet"), "and bound nothing for a player who is not here")
 
 
 ## The editor gets its own pass, because _ready bails out there rather than registering actions or swapping
@@ -344,12 +402,63 @@ func test_free_mouse_motion_leaves_a_pad_player_alone() -> void:
 	assert_eq(_controls.current_input_type, Controls.InputType.MICROSOFT, "The pad HUD stays put")
 
 
+## A pad the name gives nothing away about is still a pad, so it gets the Xbox art rather than being left on
+## the keyboard set. Only this fallback can be proved here: the name comes from Input.get_joy_name, which is
+## whatever pad is in the socket, and a headless run has none, so the Nintendo and Sony branches need a real one.
+func test_an_unrecognised_pad_is_drawn_as_an_xbox_pad() -> void:
+	_controls = _make_controls()
+	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
+
+	var press: InputEventJoypadButton = InputEventJoypadButton.new()
+	press.device = 7
+	press.button_index = JOY_BUTTON_A
+	press.pressed = true
+	_controls._input(press)
+
+	assert_eq(Input.get_joy_name(7), "", "No pad is in that socket, so its name matches nothing")
+	assert_eq(_controls.current_input_type, Controls.InputType.MICROSOFT, "and the HUD still swaps to a pad")
+	assert_eq(_controls._pad_device, 7, "and remembers which pad, so a rumble reaches the one in hand")
+
+
+## A text field with focus owns the keys. Typing into a chat box must not light the buttons whose keys the
+## letters happen to be, and must not take a screenshot.
+func test_a_focused_text_field_keeps_the_hud_from_reacting() -> void:
+	_controls = _make_controls()
+	var press: InputEventAction = InputEventAction.new()
+	press.action = _controls.action_button_0
+	press.pressed = true
+	_controls._input(press)
+	assert_eq(_controls.joypad_button_0.texture_normal, _controls.joypad_button_0.texture_pressed, "Without one the button lights up")
+	var release: InputEventAction = InputEventAction.new()
+	release.action = _controls.action_button_0
+	_controls._input(release)
+
+	var chat: LineEdit = LineEdit.new()
+	add_child_autofree(chat)
+	chat.grab_focus()
+	_controls._input(press)
+	assert_ne(_controls.joypad_button_0.texture_normal, _controls.joypad_button_0.texture_pressed, "With one the button stays as it was")
+
+
 func test_input_type_change_swaps_the_button_art() -> void:
 	_controls = _make_controls()
 	_controls.current_input_type = Controls.InputType.SONY
 	var sony: Texture2D = _controls.joypad_button_0.texture_normal
 	_controls.current_input_type = Controls.InputType.NINTENDO
 	assert_ne(_controls.joypad_button_0.texture_normal, sony, "The face button is drawn for the pad in hand")
+
+
+## The vendor art is read off the exports by slot name, so every button gets the texture whose export names
+## it, and there is no hand-kept order to slip.
+func test_each_swappable_button_gets_the_export_named_for_it() -> void:
+	_controls = _make_controls()
+	for input_type: Controls.InputType in Controls.VENDOR_PREFIXES:
+		_controls.current_input_type = input_type
+		var prefix: String = Controls.VENDOR_PREFIXES[input_type]
+		for slot: String in Controls.SWAPPABLE_SLOTS:
+			var button: TouchScreenButton = _controls.get("joypad_%s" % slot)
+			assert_eq(button.texture_normal, _controls.get("%s_%s_normal" % [prefix, slot]), "%s on %s" % [slot, prefix])
+			assert_eq(button.texture_pressed, _controls.get("%s_%s_pressed" % [prefix, slot]), "%s on %s, pressed" % [slot, prefix])
 
 
 func test_input_type_changed_is_emitted() -> void:
@@ -375,6 +484,15 @@ func test_set_labels_mirrors_onto_the_keyboard_set() -> void:
 	})
 	assert_eq(_controls.key_i_label.text, "Inventory", "The [I] key reads what d-pad up reads")
 	assert_eq(_controls.key_s_label.text, "Walk", "The [S] key reads what the left stick reads")
+
+
+## The d-pad pairs go the other way too, and a pair named on both sides keeps both.
+func test_set_labels_mirrors_the_keys_onto_the_dpad() -> void:
+	_controls = _make_controls()
+	_controls.set_labels({_controls.key_j_label: "Map", _controls.key_l_label: "Chart", _controls.joypad_button_14_label: "Atlas"})
+	assert_eq(_controls.joypad_button_13_label.text, "Map", "D-pad left reads what the [J] key reads")
+	assert_eq(_controls.joypad_button_14_label.text, "Atlas", "and a side named for itself keeps its own")
+	assert_eq(_controls.key_l_label.text, "Chart")
 
 
 ## The HUD names no button for you. A label is what the game calls that button in that moment, and the addon

@@ -33,6 +33,10 @@ dialog.
 Drop `addons/controls/controls.tscn` into your scene as a child of whatever owns the screen, and hang
 `addons/controls/action_prompt.tscn` on anything interactable.
 
+In a multiplayer game only the HUD the local peer has authority over is on screen. A remote player's copy
+hides itself, answers no input and registers no actions, so it neither sits on top of the local HUD nor binds
+anything for a player who is not at this keyboard.
+
 ## Mapping the buttons
 
 Every slot on the HUD is an exported action name, grouped in the inspector by where the button is:
@@ -51,13 +55,14 @@ Every slot on the HUD is an exported action name, grouped in the inspector by wh
 The defaults are Godot's own actions wherever the engine already binds that physical button, so a project that
 has never defined an action of its own still gets a working HUD: the face buttons drive accept, cancel and
 select, and the d-pad, the left stick and WASD drive the four directions. A slot the engine does not bind but
-the key face names still gets that key: `F5` for View, `Esc` for the pause button and `PrtScn` for Screenshot.
+the key face names still gets that key: `F5` for View, `Esc` for the pause button, `PrtScn` for Screenshot, and
+`I`, `J`, `K` and `L` for the four d-pad slots, which draw those keys as their keyboard faces.
 
 Two rules follow from that table.
 
 **A blank slot is a button your game does not use, and it is hidden.** That is why the left face button, the
 shoulders, the triggers and the right stick are absent until you map them. A HUD that shows a Throw button for
-a game with no throwing is worse than no HUD.
+a game with no throwing is worse than no HUD. Blank all four d-pad slots and the cross they sit on goes too.
 
 That hiding happens in the editor as well as in the running game, so the scene shows what ships rather than
 every button the HUD owns. Only the visibility is previewed: no action is registered, no texture is swapped
@@ -171,8 +176,17 @@ shoulder and trigger; whether the sticks and d-pad are shown or WASD and the arr
 an `ActionPrompt` shows. It is set from the input events themselves, and `input_type_changed` fires when it
 moves, which is what a game listens to when its labels differ per device.
 
-Touch borrows the Xbox art. `rumble(weak, strong, seconds)` rumbles the pad and returns `false` without doing
-anything on keyboard or touch.
+A pad is told by its name: one that says Nintendo gets the Switch art, one that says PlayStation, DualShock,
+DualSense or Sony gets the PlayStation art, and any other pad is drawn as an Xbox pad, because that is the
+layout most of them copy and a pad the name gives nothing away about is still a pad.
+
+Touch borrows the Xbox art. `rumble(weak, strong, seconds)` rumbles the pad the player last pressed and returns
+`false` without doing anything on keyboard or touch. Every action the HUD registers is bound for all devices,
+so a second pad fires it as well as the first.
+
+While a text field - a `LineEdit` or a `TextEdit` - has focus, the HUD lights no button and takes no
+screenshot, so typing into a chat box presses nothing. The device is still read from the keys, so the art
+follows the player to the keyboard as they type.
 
 ### Movement on a touchscreen
 
