@@ -70,24 +70,24 @@ const SLOT_EVENTS: Dictionary = {
 
 @export var input_deadzone: float = 0.05 ## Address joystick drift by setting a deadzone threshold for joystick motion inputs
 
-## How big the HUD is drawn, on every device. Each corner's cluster of buttons scales about the corner it is
-## anchored to, so the bottom right grows up and to the left and stays in the bottom right. It is the HUD's
-## own size, separate from whatever the project's stretch mode does to the rest of the game's UI, and it shows
-## in the editor as it is typed.
-@export_range(0.25, 4.0, 0.05) var hud_scale: float = 1.0:
+## How big a face button is, as a fraction of the shorter side of the window in real pixels, a tenth by
+## default. The HUD sizes itself to the window rather than to the project's stretch mode, and sizes itself
+## again whenever the window changes, so it comes out the same on the glass whether the game stretches its
+## canvas or draws pixel for pixel, and a thumb has something to hit. Zero turns the fit off and leaves the
+## HUD at [member hud_scale] alone.
+@export_range(0.0, 0.3, 0.005) var button_fraction: float = 0.1:
 	set(value):
-		hud_scale = value
+		button_fraction = value
 		if is_node_ready():
 			apply_scale()
 
-## How big a face button has to be on a touchscreen, as a fraction of the shorter side of the window in real
-## pixels, so a thumb has something to hit whatever the project's stretch mode makes of the canvas. On touch
-## the HUD grows until a button is at least that big, and never shrinks below [member hud_scale], so a game
-## that draws it bigger than this keeps its size. Touch only: a pad or keyboard player's HUD is only ever
-## [member hud_scale]. Zero turns the fit off.
-@export_range(0.0, 0.3, 0.005) var touch_button_fraction: float = 0.1:
+## A multiplier on top of the fit, for a game that wants its HUD a little bigger or smaller than
+## [member button_fraction] gives, or a fixed size with the fit turned off. Each corner's cluster of buttons
+## scales about the corner it is anchored to, so the bottom right grows up and to the left and stays in the
+## bottom right. It shows in the editor as it is typed.
+@export_range(0.25, 4.0, 0.05) var hud_scale: float = 1.0:
 	set(value):
-		touch_button_fraction = value
+		hud_scale = value
 		if is_node_ready():
 			apply_scale()
 
@@ -500,7 +500,7 @@ func _ready() -> void:
 	register_actions(extra_actions)
 	_register_slot_actions()
 	update_input_ui()
-	# The touch fit is measured against the window, so a resize or a turned phone measures again.
+	# The fit is measured against the window, so a resize or a turned phone measures again.
 	get_viewport().size_changed.connect(apply_scale)
 
 
@@ -880,26 +880,24 @@ func update_input_ui() -> void:
 	apply_scale()
 
 
-## What the corners are drawn at right now: [member hud_scale], and on a touchscreen whatever more
-## [member touch_button_fraction] asks for.
+## What the corners are drawn at right now: the fit to the window, times [member hud_scale].
 func get_effective_scale() -> float:
-	return hud_scale * touch_fit()
+	return hud_scale * window_fit()
 
 
-## How much more than [member hud_scale] a touchscreen needs: one when a face button already covers
-## [member touch_button_fraction] of the window's shorter side, more when it does not. It measures the window
-## in real pixels through whatever stretch the project applies, so the answer is the same fraction of the
-## glass whether the game stretches its canvas or draws pixel for pixel. One on anything but a touchscreen,
-## and in the editor, where there is no player's window to measure.
-func touch_fit() -> float:
-	if Engine.is_editor_hint() or current_input_type != InputType.TOUCH or touch_button_fraction <= 0.0:
+## The scale that makes a face button [member button_fraction] of the window's shorter side. It measures the
+## window in real pixels through whatever stretch the project applies, so the answer is the same fraction of
+## the glass whether the game stretches its canvas or draws pixel for pixel, and it goes down as well as up.
+## One with the fit turned off, and in the editor, where there is no player's window to measure.
+func window_fit() -> float:
+	if Engine.is_editor_hint() or button_fraction <= 0.0:
 		return 1.0
 	var window_size: Vector2 = Vector2(get_window().size)
 	var canvas_to_window: float = get_viewport().get_final_transform().get_scale().x
-	var drawn: float = BUTTON_SIZE * hud_scale * canvas_to_window
+	var drawn: float = BUTTON_SIZE * canvas_to_window
 	if drawn <= 0.0:
 		return 1.0
-	return maxf(1.0, touch_button_fraction * minf(window_size.x, window_size.y) / drawn)
+	return button_fraction * minf(window_size.x, window_size.y) / drawn
 
 
 ## Scales every corner's cluster about its own anchored corner - the pivot each has in the scene - so the

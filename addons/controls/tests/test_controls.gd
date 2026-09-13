@@ -628,7 +628,7 @@ func test_the_picker_drops_blanks_and_repeats() -> void:
 ## The HUD's size is its own, corner by corner: each cluster grows about the corner it is anchored to, so the
 ## bottom right stays in the bottom right and its buttons grow into the screen rather than off it.
 func test_hud_scale_grows_each_corner_about_its_own_corner() -> void:
-	_controls = _make_controls()
+	_controls = _make_controls({"button_fraction": 0.0})
 	await wait_process_frames(1)
 	var corners: Dictionary = {}
 	for cluster: Control in _controls._clusters:
@@ -642,27 +642,42 @@ func test_hud_scale_grows_each_corner_about_its_own_corner() -> void:
 		assert_almost_eq(corner_now, corners[cluster] as Vector2, Vector2(0.5, 0.5), "%s's corner stays put" % cluster.name)
 
 
-## On a touchscreen the HUD grows until a face button is a set fraction of the shorter side of the window in
-## real pixels, whatever the project's stretch mode has made of the canvas, and never shrinks below the scale
-## the game set. Anywhere but a touchscreen the fit is one.
-func test_touch_grows_the_hud_to_a_fraction_of_the_screen() -> void:
-	_controls = _make_controls({"touch_button_fraction": 0.2})
-	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
-	assert_eq(_controls.get_effective_scale(), 1.0, "a keyboard player gets the HUD at the scale the game set")
-	_controls.current_input_type = Controls.InputType.TOUCH
+## The HUD sizes itself to the window, not to the project's stretch mode: a face button is a set fraction of
+## the shorter side of the window in real pixels, on every device, going down as well as up, and hud_scale
+## multiplies whatever that gives.
+func test_the_hud_is_a_fraction_of_the_window_on_every_device() -> void:
+	_controls = _make_controls({"button_fraction": 0.2})
 	var window_size: Vector2 = Vector2(_controls.get_window().size)
 	var drawn: float = Controls.BUTTON_SIZE * _controls.get_viewport().get_final_transform().get_scale().x
-	var expected: float = maxf(1.0, 0.2 * minf(window_size.x, window_size.y) / drawn)
+	var expected: float = 0.2 * minf(window_size.x, window_size.y) / drawn
 	assert_gt(expected, 1.0, "a fifth of this window is more than a button, so the HUD has to grow")
-	assert_almost_eq(_controls.get_effective_scale(), expected, 0.001, "a face button is a fifth of the shorter side")
+	for device: Controls.InputType in [Controls.InputType.KEYBOARD_MOUSE, Controls.InputType.SONY, Controls.InputType.TOUCH]:
+		_controls.current_input_type = device
+		assert_almost_eq(_controls.get_effective_scale(), expected, 0.001, "a face button is a fifth of the shorter side on %s" % Controls.InputType.keys()[device])
 	assert_almost_eq(_controls._clusters[0].scale.x, expected, 0.001, "and the corners are drawn at that")
+	_controls.button_fraction = 0.02
+	assert_lt(_controls.get_effective_scale(), 1.0, "a smaller fraction shrinks it, below one included")
 	_controls.hud_scale = 2.0
-	assert_almost_eq(_controls.get_effective_scale(), maxf(2.0, expected), 0.001, "the fit never shrinks the HUD below hud_scale")
+	assert_almost_eq(_controls.get_effective_scale(), 2.0 * 0.02 * minf(window_size.x, window_size.y) / drawn, 0.001, "hud_scale multiplies the fit")
 	_controls.hud_scale = 1.0
-	_controls.touch_button_fraction = 0.0
+	_controls.button_fraction = 0.0
 	assert_eq(_controls.get_effective_scale(), 1.0, "zero turns the fit off")
-	_controls.touch_button_fraction = 0.001
-	assert_eq(_controls.get_effective_scale(), 1.0, "and a fraction a button already covers changes nothing")
+
+
+## A resized window is measured again, so the HUD keeps its fraction of the glass.
+func test_the_hud_follows_the_window_when_it_resizes() -> void:
+	_controls = _make_controls({"button_fraction": 0.1})
+	var window: Window = _controls.get_window()
+	var was: Vector2i = window.size
+	var before: float = _controls.get_effective_scale()
+	window.size = was * 2
+	await wait_process_frames(2)
+	assert_almost_eq(_controls._clusters[1].scale.x, _controls.get_effective_scale(), 0.001, "the corners were re-drawn for the new size")
+	# What the doubled window asks for depends on the stretch mode; that it was measured again does not.
+	assert_almost_eq(_controls.get_effective_scale(), 0.1 * minf(window.size.x, window.size.y) / (Controls.BUTTON_SIZE * _controls.get_viewport().get_final_transform().get_scale().x), 0.001, "and it is the fraction of the window as it is now")
+	window.size = was
+	await wait_process_frames(2)
+	assert_almost_eq(_controls.get_effective_scale(), before, 0.001, "back to where it was")
 
 
 ## A thumb is not a pointer: every button takes a finger that slides onto it, and its hit area is the whole
