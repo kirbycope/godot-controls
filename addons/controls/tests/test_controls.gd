@@ -873,3 +873,29 @@ func test_a_world_prompt_draws_the_button_bound_to_prompt_action() -> void:
 		assert_eq(material.albedo_texture, _controls.button_art(_controls.joypad_button_3), "Drawn as Y, where interact is")
 	assert_eq(_controls.action_button(&"test_interact"), _controls.joypad_button_3)
 	prompt.hide_for(_controls)
+
+
+## The editor plugin is the one script nothing else here reaches. No test instantiates an [EditorPlugin], the
+## demo project does not enable this one, and its [code]preload[/code] is written relative to the file, so a
+## search for "res://" never lands on it: rename what it names and nothing points at the break. Loading a
+## GDScript compiles it, though, and a preload of a file that is not there is a compile error, so a plugin in
+## that state comes back null from [method @GDScript.load]. That is the whole guard.
+func test_the_editor_plugin_still_compiles() -> void:
+	assert_not_null(load("res://addons/controls/plugin.gd"), "plugin.gd compiles, so everything it preloads is there")
+
+
+## Says which path is missing when one is, rather than leaving a bare null to work backwards from.
+func test_every_path_the_plugin_preloads_resolves() -> void:
+	var source: String = FileAccess.get_file_as_string("res://addons/controls/plugin.gd")
+	assert_false(source.is_empty(), "plugin.gd is readable")
+	var checked: int = 0
+	for line: String in source.split("\n"):
+		var opens: int = line.find("preload(\"")
+		if opens < 0:
+			continue
+		var from: int = opens + 9
+		var path: String = line.substr(from, line.find("\"", from) - from)
+		var absolute: String = path if path.begins_with("res://") else "res://addons/controls/".path_join(path)
+		checked += 1
+		assert_true(ResourceLoader.exists(absolute), "plugin.gd preloads %s, which resolves to %s and is not there" % [path, absolute])
+	assert_gt(checked, 0, "and there were preloads to check, so the scan is not passing on an empty list")

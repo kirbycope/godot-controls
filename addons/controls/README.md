@@ -273,6 +273,13 @@ conflict when the asset is installed from the library.
 & 'C:\Godot\godot.exe' --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://addons/controls/tests -gexit
 ```
 
+Two of them guard `plugin.gd`, which nothing else here reaches: no test instantiates an `EditorPlugin`, the
+demo project does not enable this one, and the `preload` in it is written relative to the file, so a search
+for `res://` never lands on it. Rename what it names and the only sign is that the addon stops enabling, in
+somebody else's project. Loading a GDScript compiles it and a preload of a missing file is a compile error,
+so `load("res://addons/controls/plugin.gd")` comes back null when it is broken; the second test walks the
+preloads and names the one that does not resolve, so the message says what to fix.
+
 ## Credits and licenses
 
 | What | Author | License | Source |
