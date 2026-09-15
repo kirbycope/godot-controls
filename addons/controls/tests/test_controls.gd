@@ -810,3 +810,66 @@ func test_touch_hit_areas_cover_the_art_and_take_a_sliding_thumb() -> void:
 			assert_gte((button.shape as RectangleShape2D).size.x, 48.0, "%s's hit area covers its key face" % button.name)
 	for cluster: Control in _controls._clusters:
 		assert_eq(cluster.mouse_filter, Control.MOUSE_FILTER_IGNORE, "%s lets touches through to the game" % cluster.name)
+
+
+## With contextual_only on, a button is drawn only while its label says something the scene did not.
+func test_contextual_only_shows_just_the_buttons_with_a_contextual_label() -> void:
+	_controls = _make_controls({"action_button_0": &"test_interact", "action_button_3": &"test_menu"})
+	_controls.current_input_type = Controls.InputType.MICROSOFT
+	_controls.contextual_only = true
+	assert_false(_controls.joypad_button_0.visible, "Resting labels draw nothing")
+	assert_false(_controls.joypad_button_3.visible)
+	assert_false(_controls.left_joystick.visible, "Nor do the sticks")
+	assert_false(_controls.dpad_base.visible)
+	_controls.claim_action_label("Pick Up", self)
+	assert_true(_controls.joypad_button_0.visible, "A prompt's word shows its button")
+	assert_eq(_controls.joypad_button_0_label.text, "Pick Up")
+	assert_false(_controls.joypad_button_3.visible, "And that button alone")
+	_controls.release_action_label(self)
+	assert_false(_controls.joypad_button_0.visible, "Given back, it goes again")
+	_controls.set_labels({_controls.joypad_button_3_label: "Climb", _controls.joypad_button_11_label: "Seeker"})
+	assert_true(_controls.joypad_button_3.visible, "A state's label shows its button")
+	assert_true(_controls.joypad_button_11.visible)
+	assert_true(_controls.dpad_base.visible, "The d-pad cross comes with a d-pad button")
+	assert_false(_controls.joypad_button_0.visible)
+	_controls.set_labels({_controls.joypad_button_3_label: _controls._label_texts[_controls.joypad_button_3_label]})
+	assert_false(_controls.joypad_button_3.visible, "The scene's own word is not contextual")
+	_controls.contextual_only = false
+	assert_true(_controls.joypad_button_0.visible, "Off, the whole set is back")
+	assert_true(_controls.joypad_button_3.visible)
+	assert_true(_controls.left_joystick.visible)
+
+
+## A game that moves its interact action about the pad names it in prompt_action, and a prompt's word follows it.
+func test_a_prompt_writes_the_button_bound_to_prompt_action() -> void:
+	_controls = _make_controls({"action_button_0": &"test_sprint", "action_button_3": &"test_interact"})
+	_controls.current_input_type = Controls.InputType.MICROSOFT
+	_controls.prompt_action = &"test_interact"
+	assert_eq(_controls.action_label(&"test_interact"), _controls.joypad_button_3_label, "Y carries interact")
+	assert_eq(_controls.action_label(&"test_nothing", _controls.joypad_button_1_label), _controls.joypad_button_1_label, "Unbound falls back")
+	assert_eq(_controls.prompt_label(), _controls.joypad_button_3_label)
+	var sprint_text: String = _controls.joypad_button_0_label.text
+	_controls.claim_action_label("Pick Up", self)
+	assert_eq(_controls.joypad_button_3_label.text, "Pick Up", "The prompt lands on Y")
+	assert_eq(_controls.joypad_button_0_label.text, sprint_text, "A is left alone")
+	_controls.release_action_label(self)
+	assert_ne(_controls.joypad_button_3_label.text, "Pick Up", "Given back")
+	_controls.prompt_action = &""
+	assert_eq(_controls.prompt_label(), _controls.joypad_button_0_label, "Unnamed, the bottom button as before")
+
+
+## The world prompt draws the button the HUD binds to prompt_action, so the two agree on which button to press.
+func test_a_world_prompt_draws_the_button_bound_to_prompt_action() -> void:
+	_controls = _make_controls({"action_button_0": &"test_sprint", "action_button_3": &"test_interact"})
+	_controls.current_input_type = Controls.InputType.MICROSOFT
+	_controls.prompt_action = &"test_interact"
+	var prompt: ActionPrompt = preload("res://addons/controls/action_prompt.tscn").instantiate()
+	add_child_autofree(prompt)
+	prompt.show_for(_controls, "Pick Up")
+	var glyph: MeshInstance3D = prompt.get_node("Microsoft/MeshInstance3D")
+	var material: StandardMaterial3D = glyph.get_surface_override_material(0) as StandardMaterial3D
+	assert_not_null(material, "The glyph takes its own material")
+	if material:
+		assert_eq(material.albedo_texture, _controls.button_art(_controls.joypad_button_3), "Drawn as Y, where interact is")
+	assert_eq(_controls.action_button(&"test_interact"), _controls.joypad_button_3)
+	prompt.hide_for(_controls)

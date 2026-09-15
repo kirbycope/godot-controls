@@ -163,6 +163,15 @@ the text on your instance, so a project that named its buttons in the scene gets
 keeps that name through every refresh until `hide_for` gives it back. Only the prompt that claimed the label
 can release it, so walking out of one prompt while standing in another leaves the other's label alone.
 
+A game that moves its interact action about the pad (a Zelda layout with Action on A, a GTA layout with it on
+Y) names that action in `prompt_action`, and the prompt's word lands on whichever button carries it; the
+prompt's own art follows too, drawn from `button_art(action_button(prompt_action))`, so the world prompt and the
+HUD agree on which button to press. Empty, the bottom face button is the prompt's, as before. A state that wants
+its word on "the Jump button" wherever that is asks `action_label(&"jump")` for the label to write.
+
+The prompt also turns about the vertical to face the current camera while it is shown (`face_camera`), so it
+reads the right way round from whichever side the player walked up.
+
 The prompt reads `message_begin`, the button art, `message_end`, and it spaces those three from the width of
 the text rather than from fixed positions: each label is measured, a `glyph_gap` is left either side of the
 art, and the row is centred on the node. So "Hit / to pry the lid off the crate" reads as evenly as

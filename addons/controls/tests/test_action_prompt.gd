@@ -76,7 +76,7 @@ func test_a_blank_side_takes_its_gap_with_it() -> void:
 
 
 ## The editor has to show the real spacing as it is typed into, and a label's own font settings have no signal
-## to announce themselves, so the per-frame pass is what keeps up with them. It runs in the editor only.
+## to announce themselves, so the layout sweep is what keeps up with them. The editor runs it every frame.
 func test_the_row_follows_a_label_that_changes_size() -> void:
 	_prompt.message_begin = "Press"
 	_prompt.message_end = "to open"
@@ -86,7 +86,7 @@ func test_the_row_follows_a_label_that_changes_size() -> void:
 	var was: float = glyph.position.x
 
 	begin.font_size = begin.font_size * 3
-	_prompt._process(0.0)
+	_prompt.lay_out_all()
 
 	assert_ne(glyph.position.x, was, "Growing the text moves the glyph out of its way")
 	var begin_right: float = begin.position.x + _prompt.text_width(begin) / 2.0
@@ -94,10 +94,58 @@ func test_the_row_follows_a_label_that_changes_size() -> void:
 	assert_almost_eq(glyph_left - begin_right, _prompt.glyph_gap, 0.0001, "and the gap is still one gap")
 
 
-## The per-frame pass is the editor's business. A running game lays the row out when the text is set, so it
-## has nothing to do each frame and does not pay for one.
-func test_the_per_frame_pass_is_editor_only() -> void:
-	assert_false(_prompt.is_processing(), "No per-frame work in a running game")
+## A running game lays the row out when the text is set, so a prompt nobody is standing at does no per-frame
+## work at all; only showing one with [member ActionPrompt.face_camera] on buys a frame pass, and hiding it
+## gives that back.
+func test_the_per_frame_pass_is_only_bought_while_a_prompt_is_up() -> void:
+	assert_false(_prompt.is_processing(), "A prompt out of range costs nothing")
+
+	_prompt.show_for(_controls)
+	assert_true(_prompt.is_processing(), "Facing the camera needs the frame pass")
+
+	_prompt.hide_for(_controls)
+	assert_false(_prompt.is_processing(), "and it is handed back when the prompt goes down")
+
+
+## With the turn switched off the prompt keeps the facing it was placed with, so a row deliberately aimed
+## along a wall stays there, and it pays for no frame pass either.
+func test_face_camera_off_keeps_the_placed_facing() -> void:
+	_prompt.face_camera = false
+	var was: Basis = _prompt.global_basis
+	_prompt.show_for(_controls)
+	assert_false(_prompt.is_processing(), "No turn to make, so no frame pass")
+	assert_eq(_prompt.global_basis, was, "The prompt is still facing where it was put")
+
+
+## The turn is about the vertical only: the row stays upright however far above or below the camera sits,
+## rather than tipping to look up at it.
+func test_facing_the_camera_turns_about_the_vertical_only() -> void:
+	var camera: Camera3D = Camera3D.new()
+	add_child_autofree(camera)
+	camera.current = true
+	camera.global_position = Vector3(6.0, 9.0, 6.0)
+	_prompt.show_for(_controls)
+	_prompt.face_the_camera()
+
+	assert_almost_eq(_prompt.global_basis.y.dot(Vector3.UP), 1.0, 0.0001, "The row is still upright")
+	var facing: Vector3 = _prompt.global_basis.z
+	var to_camera: Vector3 = (camera.global_position - _prompt.global_position)
+	to_camera.y = 0.0
+	assert_almost_eq(facing.normalized().dot(to_camera.normalized()), 1.0, 0.0001, "and its front is on the camera")
+
+
+## The turn writes a whole basis, so it has to put back the scale the prompt was placed with rather than
+## flattening it to one.
+func test_facing_the_camera_keeps_the_prompts_scale() -> void:
+	var camera: Camera3D = Camera3D.new()
+	add_child_autofree(camera)
+	camera.current = true
+	camera.global_position = Vector3(0.0, 1.0, 5.0)
+	_prompt.scale = Vector3(2.0, 2.0, 2.0)
+	_prompt.show_for(_controls)
+	_prompt.face_the_camera()
+
+	assert_almost_eq(_prompt.global_basis.get_scale().x, 2.0, 0.0001, "The prompt is the size it was placed at")
 
 
 ## Every device gets the same treatment, not just the one the demo happens to be showing.

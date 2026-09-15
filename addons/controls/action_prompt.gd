@@ -29,6 +29,10 @@ var _message_end: String = "to interact"
 	get:
 		return _message_end
 
+## Turn about the vertical to face the current camera while shown, so the row reads the right way round from
+## whichever side the player walked up; off, the prompt keeps the facing it was placed with.
+@export var face_camera: bool = true
+
 ## Space between the button art and the text on either side of it, in metres.
 @export var glyph_gap: float = 0.05:
 	set(value):
@@ -57,11 +61,37 @@ func _ready() -> void:
 	update_text()
 
 
-## Editor only, so the inspector shows the real spacing while it is being typed into. [method lay_out] writes
-## nothing when the numbers already match, so an idle scene is not marked unsaved by this.
+## The per-frame pass has one job in each place it runs. In the editor it re-spaces the rows, so the inspector
+## shows the real spacing while it is being typed into; in a running game it turns the prompt to the camera,
+## and only while one is shown with [member face_camera] on.
 func _process(_delta: float) -> void:
+	if Engine.is_editor_hint():
+		lay_out_all()
+		return
+	face_the_camera()
+
+
+## Re-spaces every sub-prompt from its own text. [method lay_out] writes nothing when the numbers already match,
+## so an idle scene is not marked unsaved by this.
+func lay_out_all() -> void:
 	for child: Node3D in get_children():
 		lay_out(child)
+
+
+## Turns the prompt about the vertical so its text reads square to the current camera. The scale the node was
+## placed with is kept: [method Basis.looking_at] returns an orthonormal basis, so writing it straight to
+## [member Node3D.global_basis] would throw away a scale set here or inherited from a parent.
+func face_the_camera() -> void:
+	var camera: Camera3D = get_viewport().get_camera_3d() if is_inside_tree() else null
+	if camera == null or not is_visible_in_tree():
+		return
+	var to_camera: Vector3 = camera.global_position - global_position
+	to_camera.y = 0.0
+	if to_camera.length_squared() <= 0.0001:
+		return
+	var scale_was: Vector3 = global_basis.get_scale()
+	# The text reads from +Z, so the row's +Z goes toward the camera
+	global_basis = Basis.looking_at(-to_camera.normalized(), Vector3.UP).scaled(scale_was)
 
 
 ## Shows only the sub-prompt matching [param controls]' current input type (child names mirror
@@ -78,14 +108,37 @@ func show_for(controls: Controls, action_label: String = "") -> void:
 	var type_name: String = String(Controls.InputType.keys()[input_type]).to_pascal_case()
 	for child: Node3D in get_children():
 		child.visible = child.name == type_name
+		if child.visible:
+			_match_glyph(child, controls)
 	if action_label != "":
 		controls.claim_action_label(action_label, self)
 	show()
+	set_process(Engine.is_editor_hint() or face_camera)
+
+
+## Draws on [param row]'s glyph the button the HUD binds to its [member Controls.prompt_action] (Y where a scheme
+## put Action there, A where it did not), so the world prompt and the HUD agree; with no action named, the
+## scene's own art stays.
+func _match_glyph(row: Node3D, controls: Controls) -> void:
+	var glyph: MeshInstance3D = row.get_node_or_null("MeshInstance3D") as MeshInstance3D
+	if glyph == null or controls.prompt_action.is_empty():
+		return
+	var button: TouchScreenButton = controls.action_button(controls.prompt_action)
+	var art: Texture2D = controls.button_art(button) if button else null
+	if art == null:
+		return
+	var material: StandardMaterial3D = glyph.get_surface_override_material(0) as StandardMaterial3D
+	if material == null:
+		var base: Material = glyph.mesh.surface_get_material(0) if glyph.mesh else null
+		material = base.duplicate() as StandardMaterial3D if base is StandardMaterial3D else StandardMaterial3D.new()
+		glyph.set_surface_override_material(0, material)
+	material.albedo_texture = art
 
 
 ## Hides the prompt and gives the bottom-action button its label back (unless another prompt has taken it since).
 func hide_for(controls: Controls) -> void:
 	hide()
+	set_process(Engine.is_editor_hint())
 	if not is_instance_valid(controls):
 		return
 	controls.release_action_label(self)
@@ -111,8 +164,7 @@ func update_text() -> void:
 	label_3d_2_3.text = message_end
 	label_3d_2_4.text = message_end
 
-	for child: Node3D in get_children():
-		lay_out(child)
+	lay_out_all()
 
 
 ## Spaces one sub-prompt out from the width of its own text: [code]begin[/code], gap, button art, gap,

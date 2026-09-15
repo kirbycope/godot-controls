@@ -124,6 +124,18 @@ const VENDOR_PREFIXES: Dictionary[InputType, String] = {
 			preview_in_editor()
 		else:
 			update_input_ui()
+## Draw only the buttons that mean something right now: a button whose label differs from the resting text the
+## scene gave it (a prompt's "Pick Up" on Action beside a pickup, a state's "Climb" on Jump at a wall, "Aim" on
+## the trigger while a gun is held), and nothing else, the way Breath of the Wild shows a hint as it becomes
+## relevant. The sticks and the d-pad stay off unless a label of theirs changed too. Off, the whole set is drawn.
+## A game that keeps the HUD off the desktop screen turns this on instead of hiding the node, so the hints still
+## pop in; the visibility follows every label write ([method set_labels], [method reset_labels], a prompt's claim).
+@export var contextual_only: bool = false:
+	set(value):
+		contextual_only = value
+		if is_node_ready() and not Engine.is_editor_hint():
+			_apply_contextual_visibility()
+
 ## Whether the share button saves a PNG of the screen when it is pressed. It is the one button here the HUD
 ## acts on itself, because capturing the screen is not something a game has to be asked about; turn it off in a
 ## project that captures the screen its own way, or blank [member action_button_15] to drop the button entirely.
@@ -321,6 +333,10 @@ var extra_actions: Dictionary = {}
 ## What the bottom-action button reads while a world prompt is in range ("Pick Up"), kept through every label
 ## refresh. [method ActionPrompt.show_for] claims it and [method ActionPrompt.hide_for] gives it back.
 var prompt_action_label: String = ""
+## The action a world prompt names: its label is the one [method claim_action_label] writes. Empty means the
+## bottom face button, whatever it carries. A game that moves its interact action about the pad (a control
+## scheme) names it here so "Pick Up" lands on the button that picks up.
+@export var prompt_action: StringName = &""
 
 ## The five corners the buttons are grouped in. Each is anchored to its corner of the screen and pivots there,
 ## which is what lets [member hud_scale] grow it into the screen rather than off it.
@@ -733,6 +749,7 @@ func reset_labels() -> void:
 		label.text = _label_texts[label]
 	_apply_contextual_labels()
 	_apply_prompt_label()
+	_apply_contextual_visibility()
 
 
 ## Hook for a subclass that has labels of its own to re-apply after a reset (what the shoulder button casts,
@@ -759,14 +776,63 @@ func release_action_label(owner: Object) -> void:
 	if _prompt_owner == owner:
 		prompt_action_label = ""
 		_prompt_owner = null
+		# The scene's own word goes back on the button; whatever owns the contextual labels may write over it
+		var label: Label = prompt_label()
+		if label != null and _label_texts.has(label):
+			label.text = _label_texts[label]
+		if is_node_ready():
+			_apply_contextual_visibility()
 	contextual_labels_requested.emit()
+
+
+## The label a world prompt writes: the button bound to [member prompt_action], else the bottom face button.
+func prompt_label() -> Label:
+	if not prompt_action.is_empty():
+		var label: Label = action_label(prompt_action)
+		if label != null:
+			return label
+	return joypad_button_0_label
+
+
+## The joypad label of the slot bound to [param action] ("Jump" on Y in one scheme, on X in another), so a state
+## can write its word on whichever button carries the action; [param fallback] when no slot carries it.
+func action_label(action: StringName, fallback: Label = null) -> Label:
+	if action.is_empty():
+		return fallback
+	for slot: String in get_slot_actions():
+		if get_slot_actions()[slot] == action:
+			var label: Label = get("joypad_%s_label" % slot) as Label
+			if label != null:
+				return label
+	return fallback
+
+
+## The on-screen button of the slot bound to [param action], or [param fallback] when no slot carries it.
+func action_button(action: StringName, fallback: TouchScreenButton = null) -> TouchScreenButton:
+	if action.is_empty():
+		return fallback
+	for slot: String in get_slot_actions():
+		if get_slot_actions()[slot] == action:
+			var button: TouchScreenButton = get("joypad_%s" % slot) as TouchScreenButton
+			if button != null:
+				return button
+	return fallback
+
+
+## The art [param button] shows at rest for the current input type (the pad's glyph, or the key's), so a world
+## prompt can draw the same button the HUD does.
+func button_art(button: TouchScreenButton) -> Texture2D:
+	return _normal_textures.get(button, button.texture_normal if button else null)
 
 
 ## A world prompt in range keeps the bottom-action button reading what it does ("Pick Up", "Get In") through
 ## every label refresh, until the prompt gives the label back ([method ActionPrompt.hide_for]).
 func _apply_prompt_label() -> void:
-	if prompt_action_label != "" and joypad_button_0_label != null:
-		joypad_button_0_label.text = prompt_action_label
+	var label: Label = prompt_label()
+	if prompt_action_label != "" and label != null:
+		label.text = prompt_action_label
+	if is_node_ready():
+		_apply_contextual_visibility()
 
 
 ## Writes one state's labels: [param label_texts] maps a label node to its text, and every other label is
@@ -884,7 +950,37 @@ func update_input_ui() -> void:
 
 	for item: CanvasItem in _unbound:
 		item.hide()
+	_apply_contextual_visibility()
 	apply_scale()
+
+
+## Whether [param label] reads something other than the text the scene gave it: a state's or a prompt's word.
+func is_label_contextual(label: Label) -> bool:
+	return label != null and label.text != "" and label.text != _label_texts.get(label, label.text)
+
+
+## With [member contextual_only] on, shows only the buttons whose label is contextual and hides the rest; off,
+## it does nothing, since [method update_input_ui] has already drawn the whole set for the device in hand.
+func _apply_contextual_visibility() -> void:
+	if not contextual_only:
+		for i: int in all_buttons.size():
+			var button: TouchScreenButton = all_buttons[i]
+			var device_set: bool = _joypad_only.has(button) or _keyboard_only.has(button)
+			button.visible = (_belongs_on_screen(button) if device_set else true) and not _unbound.has(button)
+		left_joystick.visible = _belongs_on_screen(left_joystick) and not _unbound.has(left_joystick)
+		right_joystick.visible = _belongs_on_screen(right_joystick) and not _unbound.has(right_joystick)
+		dpad_base.visible = _belongs_on_screen(dpad_base) and not _unbound.has(dpad_base)
+		return
+	var dpad_shown: bool = false
+	for i: int in all_buttons.size():
+		var button: TouchScreenButton = all_buttons[i]
+		var shown: bool = _belongs_on_screen(button) and not _unbound.has(button) and is_label_contextual(all_labels[i])
+		button.visible = shown
+		if shown and (button == joypad_button_11 or button == joypad_button_12 or button == joypad_button_13 or button == joypad_button_14):
+			dpad_shown = true
+	left_joystick.visible = _belongs_on_screen(left_joystick) and not _unbound.has(left_joystick) and is_label_contextual(left_joystick_label)
+	right_joystick.visible = _belongs_on_screen(right_joystick) and not _unbound.has(right_joystick) and is_label_contextual(right_joystick_label)
+	dpad_base.visible = dpad_shown and _belongs_on_screen(dpad_base)
 
 
 ## What the corners are drawn at right now: the fit to the window, times [member hud_scale].
