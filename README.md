@@ -46,20 +46,6 @@ action, so a scheme that moves Action from A to Y moves the prompts with it. `ac
 `action_button(action)` are the lookups; a state uses them to write "Climb" on the Jump button wherever it is.
 The `ActionPrompt` also faces the camera while shown (`face_camera`), so it never reads mirrored from behind.
 
-## Textures import Lossless
-
-Every texture here imports with `compress/mode=0` (Lossless) and `detect_3d/compress_to=1`, so the
-editor promotes one to VRAM Compressed the first time it sees it used in 3D. That is Godot's own
-default.
-
-This repository used to force `compress/mode=1` (Lossy) with promotion disabled, project wide. That
-re-encoded every image through WebP at quality 0.7 before Godot saw it, and still uploaded
-uncompressed to VRAM, so it lost real data -- every input prompt icon here is an SVG, blurred by a lossy re-encode for no gain and bought nothing at run time. It existed only to
-squeeze a built `.pck` under GitHub's 100 MB limit, and nothing built is committed any more.
-
-`python ../godot-3d-player-controller-v3/tools/texture_import_policy.py --root .` puts the
-repository back on that policy, and `--check` reports without writing.
-
 ## Installing it in a game
 
 Copy `addons/controls/` into your project's `addons/`. See the
