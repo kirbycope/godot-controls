@@ -449,16 +449,77 @@ func test_input_type_change_swaps_the_button_art() -> void:
 
 
 ## The vendor art is read off the exports by slot name, so every button gets the texture whose export names
-## it, and there is no hand-kept order to slip.
+## it, and there is no hand-kept order to slip. The keyboard set is not in here: its face comes from the key
+## actually bound, which the tests below cover.
 func test_each_swappable_button_gets_the_export_named_for_it() -> void:
 	_controls = _make_controls()
 	for input_type: Controls.InputType in Controls.VENDOR_PREFIXES:
+		if input_type == Controls.InputType.KEYBOARD_MOUSE:
+			continue
 		_controls.current_input_type = input_type
 		var prefix: String = Controls.VENDOR_PREFIXES[input_type]
 		for slot: String in Controls.SWAPPABLE_SLOTS:
 			var button: TouchScreenButton = _controls.get("joypad_%s" % slot)
 			assert_eq(button.texture_normal, _controls.get("%s_%s_normal" % [prefix, slot]), "%s on %s" % [slot, prefix])
 			assert_eq(button.texture_pressed, _controls.get("%s_%s_pressed" % [prefix, slot]), "%s on %s, pressed" % [slot, prefix])
+
+
+## The keyboard face follows the action, not the slot. The art used to be baked per slot, so a game that
+## moved Jump onto another button drew the old slot's key under the new word and told the player to press a
+## key that does nothing.
+func test_the_keyboard_face_is_the_key_actually_bound() -> void:
+	var event := InputEventKey.new()
+	event.physical_keycode = KEY_T
+	InputMap.add_action(&"test_leap")
+	InputMap.action_add_event(&"test_leap", event)
+	_controls = _make_controls({"action_button_0": &"test_leap"})
+	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
+	_controls.update_input_ui()
+
+	assert_eq(_controls.joypad_button_0.texture_normal, load(KEY_ART.path_join("keyboard_t_outline.svg")),
+		"the bottom face is drawn as T because that is what presses it")
+	assert_eq(_controls.joypad_button_0.texture_pressed, load(KEY_ART.path_join("keyboard_t.svg")))
+
+	InputMap.action_erase_event(&"test_leap", event)
+	InputMap.erase_action(&"test_leap")
+
+
+## A mouse button is a key face too, and the pads are left alone: the derived art is the keyboard set's only.
+func test_the_keyboard_face_covers_the_mouse_and_leaves_the_pads_alone() -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	InputMap.add_action(&"test_fire")
+	InputMap.action_add_event(&"test_fire", event)
+	_controls = _make_controls({"action_axis_5_plus": &"test_fire"})
+
+	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
+	_controls.update_input_ui()
+	assert_eq(_controls.joypad_axis_5_plus.texture_normal, load(KEY_ART.path_join("mouse_left_outline.svg")),
+		"the right trigger is drawn as the mouse button that fires it")
+
+	_controls.current_input_type = Controls.InputType.SONY
+	assert_eq(_controls.joypad_axis_5_plus.texture_normal, _controls.sony_axis_5_plus_normal,
+		"and a pad still gets its own art")
+
+	InputMap.action_erase_event(&"test_fire", event)
+	InputMap.erase_action(&"test_fire")
+
+
+## An action with nothing on the keyboard - a pad-only binding - has no key to draw, so the slot keeps the
+## face its export gave it rather than going blank.
+func test_a_slot_with_no_key_bound_keeps_its_exported_face() -> void:
+	var event := InputEventJoypadButton.new()
+	event.button_index = JOY_BUTTON_LEFT_SHOULDER
+	InputMap.add_action(&"test_pad_only")
+	InputMap.action_add_event(&"test_pad_only", event)
+	_controls = _make_controls({"action_button_9": &"test_pad_only"})
+
+	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
+	_controls.update_input_ui()
+	assert_eq(_controls.joypad_button_9.texture_normal, _controls.keyboard_mouse_button_9_normal)
+
+	InputMap.action_erase_event(&"test_pad_only", event)
+	InputMap.erase_action(&"test_pad_only")
 
 
 func test_input_type_changed_is_emitted() -> void:

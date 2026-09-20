@@ -189,6 +189,14 @@ A pad is told by its name: one that says Nintendo gets the Switch art, one that 
 DualSense or Sony gets the PlayStation art, and any other pad is drawn as an Xbox pad, because that is the
 layout most of them copy and a pad the name gives nothing away about is still a pad.
 
+On keyboard and mouse the face is the **key actually bound to the slot's action**, not a picture baked into
+the slot: `keyboard_art_for(action)` reads the first key or mouse button on the action out of the `InputMap`
+and draws Kenney's face for it. That matters because the HUD is mapped in the inspector and a game may move an
+action from one button to another - the player controller's control schemes move them wholesale - and the old
+behaviour drew the slot's original key under the new word, telling the player to press E to jump when jumping
+was on Space. The `keyboard_mouse_*` exports are the fallback, used when the action has no key or mouse
+binding at all, as a pad-only action does.
+
 Touch borrows the Xbox art. `rumble(weak, strong, seconds)` rumbles the pad the player last pressed and returns
 `false` without doing anything on keyboard or touch. Every action the HUD registers is bound for all devices,
 so a second pad fires it as well as the first.

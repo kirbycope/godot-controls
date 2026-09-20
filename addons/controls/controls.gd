@@ -75,6 +75,33 @@ const SWAPPABLE_SLOTS: PackedStringArray = [
 	"button_7", "button_8", "button_9", "button_10", "axis_4_plus", "axis_5_plus",
 ]
 
+## Where Kenney's keyboard and mouse faces live. A key's art is [code]<name>_outline.svg[/code] at rest and
+## [code]<name>.svg[/code] held, the same pairing the exported art uses.
+const KEY_ART_DIR: String = "res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/"
+
+## The art name for the named keys. Letters and digits are worked out from the keycode in
+## [method _key_art_name] rather than listed, since Kenney names them after themselves.
+const KEY_ART: Dictionary[int, String] = {
+	KEY_SPACE: "keyboard_space_icon", KEY_SHIFT: "keyboard_shift_icon", KEY_CTRL: "keyboard_ctrl",
+	KEY_ALT: "keyboard_alt", KEY_META: "keyboard_win", KEY_ESCAPE: "keyboard_escape",
+	KEY_ENTER: "keyboard_enter", KEY_KP_ENTER: "keyboard_numpad_enter", KEY_TAB: "keyboard_tab_icon",
+	KEY_BACKSPACE: "keyboard_backspace_icon", KEY_CAPSLOCK: "keyboard_capslock_icon",
+	KEY_DELETE: "keyboard_delete", KEY_INSERT: "keyboard_insert", KEY_HOME: "keyboard_home",
+	KEY_END: "keyboard_end", KEY_PAGEUP: "keyboard_page_up", KEY_PAGEDOWN: "keyboard_page_down",
+	KEY_PRINT: "keyboard_printscreen",
+	KEY_UP: "keyboard_arrow_up", KEY_DOWN: "keyboard_arrow_down",
+	KEY_LEFT: "keyboard_arrow_left", KEY_RIGHT: "keyboard_arrow_right",
+	KEY_F1: "keyboard_f1", KEY_F2: "keyboard_f2", KEY_F3: "keyboard_f3", KEY_F4: "keyboard_f4",
+	KEY_F5: "keyboard_f5", KEY_F6: "keyboard_f6", KEY_F7: "keyboard_f7", KEY_F8: "keyboard_f8",
+	KEY_F9: "keyboard_f9", KEY_F10: "keyboard_f10", KEY_F11: "keyboard_f11", KEY_F12: "keyboard_f12",
+}
+
+## The art name for a mouse button.
+const MOUSE_ART: Dictionary[int, String] = {
+	MOUSE_BUTTON_LEFT: "mouse_left", MOUSE_BUTTON_RIGHT: "mouse_right", MOUSE_BUTTON_MIDDLE: "mouse_scroll",
+	MOUSE_BUTTON_WHEEL_UP: "mouse_scroll_up", MOUSE_BUTTON_WHEEL_DOWN: "mouse_scroll_down",
+}
+
 ## The export prefix that holds each input type's art. Touch has none and borrows Microsoft's.
 const VENDOR_PREFIXES: Dictionary[InputType, String] = {
 	InputType.KEYBOARD_MOUSE: "keyboard_mouse",
@@ -450,6 +477,9 @@ var current_input_type: InputType = InputType.TOUCH:
 			update_input_ui()
 			input_type_changed.emit(value)
 
+## The key faces loaded so far, by art name, so a layout change does not read the disk again.
+static var _key_art: Dictionary[String, Array] = {}
+
 var _normal_textures: Dictionary[TouchScreenButton, Texture2D] = {} ## Unpressed texture per button for the current input type.
 var _label_texts: Dictionary[Label, String] = {} ## Default label text per label (from the scene).
 var _unbound: Array[CanvasItem] = [] ## Buttons and sticks whose slot was left blank, so the game does not use them.
@@ -549,6 +579,46 @@ func _apply_keyboard_textures() -> void:
 			button.texture_normal = pair[0]
 		if pair[1] != null:
 			button.texture_pressed = pair[1]
+
+
+## The key face the keyboard set should draw for [param action]: the key or mouse button actually bound to
+## it, as a [code][normal, pressed][/code] pair, or an empty array when nothing is bound or the set has no
+## art for it, in which case the slot keeps the art its export gave it.
+##
+## The picture follows the action rather than the slot it happens to sit on. A game that moves Jump off the
+## button the scene put it on ([Controls] is mapped in the inspector, and the player controller's control
+## schemes move actions about wholesale) would otherwise draw the old slot's key under the new word, telling
+## the player to press E to jump when jumping is on Space.
+func keyboard_art_for(action: StringName) -> Array:
+	if action.is_empty() or not InputMap.has_action(action):
+		return []
+	var art_name: String = ""
+	for event: InputEvent in InputMap.action_get_events(action):
+		if event is InputEventKey:
+			var key_event: InputEventKey = event as InputEventKey
+			var code: int = key_event.physical_keycode if key_event.physical_keycode != KEY_NONE else key_event.keycode
+			art_name = _key_art_name(code)
+		elif event is InputEventMouseButton:
+			art_name = MOUSE_ART.get((event as InputEventMouseButton).button_index, "")
+		if not art_name.is_empty():
+			break
+	if art_name.is_empty():
+		return []
+	if not _key_art.has(art_name):
+		var normal: Texture2D = load(KEY_ART_DIR + art_name + "_outline.svg") as Texture2D
+		var pressed: Texture2D = load(KEY_ART_DIR + art_name + ".svg") as Texture2D
+		_key_art[art_name] = [normal, pressed] if normal != null and pressed != null else []
+	return _key_art[art_name]
+
+
+## Kenney names the letters and the digits after themselves, so those come off the keycode; the rest are in
+## [constant KEY_ART].
+func _key_art_name(code: int) -> String:
+	if code >= KEY_A and code <= KEY_Z:
+		return "keyboard_" + String.chr(code).to_lower()
+	if code >= KEY_0 and code <= KEY_9:
+		return "keyboard_" + String.chr(code)
+	return KEY_ART.get(code, "")
 
 
 ## Every slot's action name, in [constant SLOT_EVENTS] order, as the exports currently have it.
@@ -934,9 +1004,14 @@ func update_input_ui() -> void:
 	reset_labels()
 
 	var textures: Array = _vendor_textures[InputType.MICROSOFT if current_input_type == InputType.TOUCH else current_input_type]
+	var on_keyboard: bool = current_input_type == InputType.KEYBOARD_MOUSE
 	for i: int in _swappable_buttons.size():
-		_swappable_buttons[i].texture_pressed = textures[i * 2 + 1]
-		_normal_textures[_swappable_buttons[i]] = textures[i * 2]
+		var button: TouchScreenButton = _swappable_buttons[i]
+		var pair: Array = keyboard_art_for(button.action) if on_keyboard else []
+		if pair.is_empty():
+			pair = [textures[i * 2], textures[i * 2 + 1]]
+		button.texture_pressed = pair[1]
+		_normal_textures[button] = pair[0]
 
 	for item: CanvasItem in _joypad_only:
 		item.visible = _belongs_on_screen(item)
