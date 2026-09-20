@@ -185,21 +185,23 @@ shoulder and trigger; whether the sticks and d-pad are shown or WASD and the arr
 an `ActionPrompt` shows. It is set from the input events themselves, and `input_type_changed` fires when it
 moves, which is what a game listens to when its labels differ per device.
 
+`input_type_of(event)` is that reading on its own, for a node that gets an event before the HUD does and
+wants to read it for the device it came from rather than the one that was in hand a moment ago; it returns
+-1 for an event that says nothing about the device.
+
 A pad is told by its name: one that says Nintendo gets the Switch art, one that says PlayStation, DualShock,
 DualSense or Sony gets the PlayStation art, and any other pad is drawn as an Xbox pad, because that is the
 layout most of them copy and a pad the name gives nothing away about is still a pad.
 
-On keyboard and mouse the face is the **key actually bound to the slot's action**, not a picture baked into
-the slot: `keyboard_art_for(action)` reads the first key or mouse button on the action out of the `InputMap`
-and draws Kenney's face for it. That matters because the HUD is mapped in the inspector and a game may move an
-action from one button to another - the player controller's control schemes move them wholesale - and the old
-behaviour drew the slot's original key under the new word, telling the player to press E to jump when jumping
-was on Space. The `keyboard_mouse_*` exports are the fallback, used when the action has no key or mouse
-binding at all, as a pad-only action does.
-
 Touch borrows the Xbox art. `rumble(weak, strong, seconds)` rumbles the pad the player last pressed and returns
 `false` without doing anything on keyboard or touch. Every action the HUD registers is bound for all devices,
 so a second pad fires it as well as the first.
+
+The art is not fixed for the life of the scene. `set_slot_art(input_type, slot, normal, pressed)` puts a new
+pair on one of the swappable slots for one device, live, and `slot_art(input_type, slot)` reads the pair back.
+A game whose keys move about at run time wants this: a layout that swaps which action a face button carries
+also swaps which key stands behind it on the keyboard set, and the button should be drawn as the key that
+actually presses it rather than the key the scene was saved with.
 
 While a text field - a `LineEdit` or a `TextEdit` - has focus, the HUD lights no button and takes no
 screenshot, so typing into a chat box presses nothing. The device is still read from the keys, so the art

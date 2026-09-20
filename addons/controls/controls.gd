@@ -75,33 +75,6 @@ const SWAPPABLE_SLOTS: PackedStringArray = [
 	"button_7", "button_8", "button_9", "button_10", "axis_4_plus", "axis_5_plus",
 ]
 
-## Where Kenney's keyboard and mouse faces live. A key's art is [code]<name>_outline.svg[/code] at rest and
-## [code]<name>.svg[/code] held, the same pairing the exported art uses.
-const KEY_ART_DIR: String = "res://addons/controls/assets/kenney_nl/Icons/Input Prompts/Keyboard & Mouse/Vector/"
-
-## The art name for the named keys. Letters and digits are worked out from the keycode in
-## [method _key_art_name] rather than listed, since Kenney names them after themselves.
-const KEY_ART: Dictionary[int, String] = {
-	KEY_SPACE: "keyboard_space_icon", KEY_SHIFT: "keyboard_shift_icon", KEY_CTRL: "keyboard_ctrl",
-	KEY_ALT: "keyboard_alt", KEY_META: "keyboard_win", KEY_ESCAPE: "keyboard_escape",
-	KEY_ENTER: "keyboard_enter", KEY_KP_ENTER: "keyboard_numpad_enter", KEY_TAB: "keyboard_tab_icon",
-	KEY_BACKSPACE: "keyboard_backspace_icon", KEY_CAPSLOCK: "keyboard_capslock_icon",
-	KEY_DELETE: "keyboard_delete", KEY_INSERT: "keyboard_insert", KEY_HOME: "keyboard_home",
-	KEY_END: "keyboard_end", KEY_PAGEUP: "keyboard_page_up", KEY_PAGEDOWN: "keyboard_page_down",
-	KEY_PRINT: "keyboard_printscreen",
-	KEY_UP: "keyboard_arrow_up", KEY_DOWN: "keyboard_arrow_down",
-	KEY_LEFT: "keyboard_arrow_left", KEY_RIGHT: "keyboard_arrow_right",
-	KEY_F1: "keyboard_f1", KEY_F2: "keyboard_f2", KEY_F3: "keyboard_f3", KEY_F4: "keyboard_f4",
-	KEY_F5: "keyboard_f5", KEY_F6: "keyboard_f6", KEY_F7: "keyboard_f7", KEY_F8: "keyboard_f8",
-	KEY_F9: "keyboard_f9", KEY_F10: "keyboard_f10", KEY_F11: "keyboard_f11", KEY_F12: "keyboard_f12",
-}
-
-## The art name for a mouse button.
-const MOUSE_ART: Dictionary[int, String] = {
-	MOUSE_BUTTON_LEFT: "mouse_left", MOUSE_BUTTON_RIGHT: "mouse_right", MOUSE_BUTTON_MIDDLE: "mouse_scroll",
-	MOUSE_BUTTON_WHEEL_UP: "mouse_scroll_up", MOUSE_BUTTON_WHEEL_DOWN: "mouse_scroll_down",
-}
-
 ## The export prefix that holds each input type's art. Touch has none and borrows Microsoft's.
 const VENDOR_PREFIXES: Dictionary[InputType, String] = {
 	InputType.KEYBOARD_MOUSE: "keyboard_mouse",
@@ -477,9 +450,6 @@ var current_input_type: InputType = InputType.TOUCH:
 			update_input_ui()
 			input_type_changed.emit(value)
 
-## The key faces loaded so far, by art name, so a layout change does not read the disk again.
-static var _key_art: Dictionary[String, Array] = {}
-
 var _normal_textures: Dictionary[TouchScreenButton, Texture2D] = {} ## Unpressed texture per button for the current input type.
 var _label_texts: Dictionary[Label, String] = {} ## Default label text per label (from the scene).
 var _unbound: Array[CanvasItem] = [] ## Buttons and sticks whose slot was left blank, so the game does not use them.
@@ -579,46 +549,6 @@ func _apply_keyboard_textures() -> void:
 			button.texture_normal = pair[0]
 		if pair[1] != null:
 			button.texture_pressed = pair[1]
-
-
-## The key face the keyboard set should draw for [param action]: the key or mouse button actually bound to
-## it, as a [code][normal, pressed][/code] pair, or an empty array when nothing is bound or the set has no
-## art for it, in which case the slot keeps the art its export gave it.
-##
-## The picture follows the action rather than the slot it happens to sit on. A game that moves Jump off the
-## button the scene put it on ([Controls] is mapped in the inspector, and the player controller's control
-## schemes move actions about wholesale) would otherwise draw the old slot's key under the new word, telling
-## the player to press E to jump when jumping is on Space.
-func keyboard_art_for(action: StringName) -> Array:
-	if action.is_empty() or not InputMap.has_action(action):
-		return []
-	var art_name: String = ""
-	for event: InputEvent in InputMap.action_get_events(action):
-		if event is InputEventKey:
-			var key_event: InputEventKey = event as InputEventKey
-			var code: int = key_event.physical_keycode if key_event.physical_keycode != KEY_NONE else key_event.keycode
-			art_name = _key_art_name(code)
-		elif event is InputEventMouseButton:
-			art_name = MOUSE_ART.get((event as InputEventMouseButton).button_index, "")
-		if not art_name.is_empty():
-			break
-	if art_name.is_empty():
-		return []
-	if not _key_art.has(art_name):
-		var normal: Texture2D = load(KEY_ART_DIR + art_name + "_outline.svg") as Texture2D
-		var pressed: Texture2D = load(KEY_ART_DIR + art_name + ".svg") as Texture2D
-		_key_art[art_name] = [normal, pressed] if normal != null and pressed != null else []
-	return _key_art[art_name]
-
-
-## Kenney names the letters and the digits after themselves, so those come off the keycode; the rest are in
-## [constant KEY_ART].
-func _key_art_name(code: int) -> String:
-	if code >= KEY_A and code <= KEY_Z:
-		return "keyboard_" + String.chr(code).to_lower()
-	if code >= KEY_0 and code <= KEY_9:
-		return "keyboard_" + String.chr(code)
-	return KEY_ART.get(code, "")
 
 
 ## Every slot's action name, in [constant SLOT_EVENTS] order, as the exports currently have it.
@@ -768,30 +698,41 @@ func _events_for(binding: Dictionary) -> Array[InputEvent]:
 	return events
 
 
+## The device [param event] came from, as [member current_input_type] would be set by it, or -1 for an event
+## that says nothing about the device. A click is always someone at a mouse, but motion only counts while the
+## mouse is captured, so nudging the desk does not take a pad player's HUD away. A touchscreen sends mouse
+## events too where the project emulates them, and those carry DEVICE_ID_EMULATION. A pad is told by its name:
+## Nintendo [Switch] and Sony [PlayStation]; anything else is drawn as an Xbox pad, because a pad the name gives
+## nothing away about is still a pad, and that is the layout most of them copy. Something that reads an event
+## before this HUD has seen it (a node earlier in the input order) asks here, so it reads the event for the
+## device it came from rather than the one that was in hand a moment ago.
+func input_type_of(event: InputEvent) -> int:
+	if event is InputEventKey:
+		return InputType.KEYBOARD_MOUSE
+	if event is InputEventMouse and event.device != InputEvent.DEVICE_ID_EMULATION:
+		if event is InputEventMouseButton or Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+			return InputType.KEYBOARD_MOUSE
+		return -1
+	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > input_deadzone):
+		var joystick_name: String = Input.get_joy_name(event.device).to_lower()
+		if joystick_name.contains("nintendo"):
+			return InputType.NINTENDO
+		if joystick_name.contains("playstation") or joystick_name.contains("dualshock") or joystick_name.contains("dualsense") or joystick_name.contains("sony"):
+			return InputType.SONY
+		return InputType.MICROSOFT
+	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+		return InputType.TOUCH
+	return -1
+
+
 ## Called when there is an input event.
 func _input(event: InputEvent) -> void:
-	# Detect the input device from the event. A click is always someone at a mouse, but motion only counts
-	# while the mouse is captured, so nudging the desk does not take a pad player's HUD away. A touchscreen
-	# sends mouse events too where the project emulates them, and those carry DEVICE_ID_EMULATION.
-	if event is InputEventKey:
-		current_input_type = InputType.KEYBOARD_MOUSE
-	elif event is InputEventMouse and event.device != InputEvent.DEVICE_ID_EMULATION:
-		if event is InputEventMouseButton or Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-			current_input_type = InputType.KEYBOARD_MOUSE
-	elif event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > input_deadzone):
-		_pad_device = event.device
-		var joystick_name: String = Input.get_joy_name(event.device).to_lower()
-		# Nintendo [Switch] and Sony [PlayStation] are told by name. Anything else is drawn as an Xbox pad,
-		# because a pad the name gives nothing away about is still a pad, and that is the layout most of them
-		# copy; leaving the keyboard set up for it would be wrong on every button.
-		if joystick_name.contains("nintendo"):
-			current_input_type = InputType.NINTENDO
-		elif joystick_name.contains("playstation") or joystick_name.contains("dualshock") or joystick_name.contains("dualsense") or joystick_name.contains("sony"):
-			current_input_type = InputType.SONY
-		else:
-			current_input_type = InputType.MICROSOFT
-	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
-		current_input_type = InputType.TOUCH
+	# Detect the input device from the event
+	var device: int = input_type_of(event)
+	if device >= 0:
+		if device != InputType.KEYBOARD_MOUSE and device != InputType.TOUCH:
+			_pad_device = event.device
+		current_input_type = device as InputType
 
 	# A text field with focus owns the keys: what is typed into a chat box is not a press of anything on the
 	# HUD, and it is certainly not a screenshot.
@@ -893,6 +834,43 @@ func action_button(action: StringName, fallback: TouchScreenButton = null) -> To
 ## prompt can draw the same button the HUD does.
 func button_art(button: TouchScreenButton) -> Texture2D:
 	return _normal_textures.get(button, button.texture_normal if button else null)
+
+
+## The art [param slot] shows for [param input_type], normal then pressed: the pair the exports hold, as
+## [method set_slot_art] last left it.
+func slot_art(input_type: InputType, slot: String) -> Array[Texture2D]:
+	if not VENDOR_PREFIXES.has(input_type) or not SWAPPABLE_SLOTS.has(slot):
+		return []
+	var prefix: String = VENDOR_PREFIXES[input_type]
+	return [get("%s_%s_normal" % [prefix, slot]), get("%s_%s_pressed" % [prefix, slot])]
+
+
+## Puts new art on one swappable [param slot] for one [param input_type], live: [param normal] and
+## [param pressed] replace that device's export pair for the slot, and a HUD showing that device redraws the
+## button at once. This is for a game whose keys move about at run time: a layout that swaps which action a
+## face button carries also swaps which key stands behind it on the keyboard set, and the button should be
+## drawn as the key that actually presses it. Touch borrows the Xbox art, so Xbox art set while on touch
+## shows too.
+func set_slot_art(input_type: InputType, slot: String, normal: Texture2D, pressed: Texture2D) -> void:
+	var index: int = SWAPPABLE_SLOTS.find(slot)
+	if index < 0 or not VENDOR_PREFIXES.has(input_type):
+		push_warning("No swappable slot %s for input type %s" % [slot, input_type])
+		return
+	var prefix: String = VENDOR_PREFIXES[input_type]
+	set("%s_%s_normal" % [prefix, slot], normal)
+	set("%s_%s_pressed" % [prefix, slot], pressed)
+	if not _vendor_textures.has(input_type):
+		return # not ready yet: _ready reads the exports
+	_vendor_textures[input_type][index * 2] = normal
+	_vendor_textures[input_type][index * 2 + 1] = pressed
+	var shown: InputType = InputType.MICROSOFT if current_input_type == InputType.TOUCH else current_input_type
+	if shown != input_type or index >= _swappable_buttons.size():
+		return
+	var button: TouchScreenButton = _swappable_buttons[index]
+	button.texture_pressed = pressed
+	_normal_textures[button] = normal
+	var is_held: bool = not button.action.is_empty() and InputMap.has_action(button.action) and Input.is_action_pressed(button.action)
+	button.texture_normal = pressed if is_held and pressed else normal
 
 
 ## A world prompt in range keeps the bottom-action button reading what it does ("Pick Up", "Get In") through
@@ -1004,14 +982,9 @@ func update_input_ui() -> void:
 	reset_labels()
 
 	var textures: Array = _vendor_textures[InputType.MICROSOFT if current_input_type == InputType.TOUCH else current_input_type]
-	var on_keyboard: bool = current_input_type == InputType.KEYBOARD_MOUSE
 	for i: int in _swappable_buttons.size():
-		var button: TouchScreenButton = _swappable_buttons[i]
-		var pair: Array = keyboard_art_for(button.action) if on_keyboard else []
-		if pair.is_empty():
-			pair = [textures[i * 2], textures[i * 2 + 1]]
-		button.texture_pressed = pair[1]
-		_normal_textures[button] = pair[0]
+		_swappable_buttons[i].texture_pressed = textures[i * 2 + 1]
+		_normal_textures[_swappable_buttons[i]] = textures[i * 2]
 
 	for item: CanvasItem in _joypad_only:
 		item.visible = _belongs_on_screen(item)

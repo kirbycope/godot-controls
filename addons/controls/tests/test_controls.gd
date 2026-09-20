@@ -449,13 +449,10 @@ func test_input_type_change_swaps_the_button_art() -> void:
 
 
 ## The vendor art is read off the exports by slot name, so every button gets the texture whose export names
-## it, and there is no hand-kept order to slip. The keyboard set is not in here: its face comes from the key
-## actually bound, which the tests below cover.
+## it, and there is no hand-kept order to slip.
 func test_each_swappable_button_gets_the_export_named_for_it() -> void:
 	_controls = _make_controls()
 	for input_type: Controls.InputType in Controls.VENDOR_PREFIXES:
-		if input_type == Controls.InputType.KEYBOARD_MOUSE:
-			continue
 		_controls.current_input_type = input_type
 		var prefix: String = Controls.VENDOR_PREFIXES[input_type]
 		for slot: String in Controls.SWAPPABLE_SLOTS:
@@ -464,62 +461,54 @@ func test_each_swappable_button_gets_the_export_named_for_it() -> void:
 			assert_eq(button.texture_pressed, _controls.get("%s_%s_pressed" % [prefix, slot]), "%s on %s, pressed" % [slot, prefix])
 
 
-## The keyboard face follows the action, not the slot. The art used to be baked per slot, so a game that
-## moved Jump onto another button drew the old slot's key under the new word and told the player to press a
-## key that does nothing.
-func test_the_keyboard_face_is_the_key_actually_bound() -> void:
-	var event := InputEventKey.new()
-	event.physical_keycode = KEY_T
-	InputMap.add_action(&"test_leap")
-	InputMap.action_add_event(&"test_leap", event)
-	_controls = _make_controls({"action_button_0": &"test_leap"})
+## A game whose keys move about at run time redraws a slot with the key that now presses it, the pair it set
+## is what the exports hold from then on, and the other devices' art is untouched.
+## The device an event names is readable on its own, for a node that gets the event before this HUD does.
+func test_the_device_an_event_names_is_readable_before_the_hud_sees_it() -> void:
+	_controls = _make_controls()
+	var key := InputEventKey.new()
+	key.keycode = KEY_E
+	key.pressed = true
+	assert_eq(_controls.input_type_of(key), Controls.InputType.KEYBOARD_MOUSE, "A key is the keyboard")
+	var pad := InputEventJoypadButton.new()
+	pad.button_index = JOY_BUTTON_A
+	pad.pressed = true
+	assert_eq(_controls.input_type_of(pad), Controls.InputType.MICROSOFT, "A pad with no name is drawn as an Xbox pad")
+	var touch := InputEventScreenTouch.new()
+	assert_eq(_controls.input_type_of(touch), Controls.InputType.TOUCH)
+	var motion := InputEventMouseMotion.new()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	assert_eq(_controls.input_type_of(motion), -1, "Free mouse motion says nothing about the device")
+	assert_eq(_controls.current_input_type, Controls.InputType.TOUCH, "and asking changed nothing on the HUD")
+
+
+func test_slot_art_can_be_changed_live() -> void:
+	_controls = _make_controls()
 	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
-	_controls.update_input_ui()
-
-	assert_eq(_controls.joypad_button_0.texture_normal, load(KEY_ART.path_join("keyboard_t_outline.svg")),
-		"the bottom face is drawn as T because that is what presses it")
-	assert_eq(_controls.joypad_button_0.texture_pressed, load(KEY_ART.path_join("keyboard_t.svg")))
-
-	InputMap.action_erase_event(&"test_leap", event)
-	InputMap.erase_action(&"test_leap")
-
-
-## A mouse button is a key face too, and the pads are left alone: the derived art is the keyboard set's only.
-func test_the_keyboard_face_covers_the_mouse_and_leaves_the_pads_alone() -> void:
-	var event := InputEventMouseButton.new()
-	event.button_index = MOUSE_BUTTON_LEFT
-	InputMap.add_action(&"test_fire")
-	InputMap.action_add_event(&"test_fire", event)
-	_controls = _make_controls({"action_axis_5_plus": &"test_fire"})
-
+	var normal: Texture2D = load(KEY_ART.path_join("keyboard_shift_icon_outline.svg"))
+	var pressed: Texture2D = load(KEY_ART.path_join("keyboard_shift_icon.svg"))
+	var xbox: Texture2D = _controls.microsoft_button_0_normal
+	_controls.set_slot_art(Controls.InputType.KEYBOARD_MOUSE, "button_0", normal, pressed)
+	assert_eq(_controls.joypad_button_0.texture_normal, normal, "The button showing that device is redrawn at once")
+	assert_eq(_controls.joypad_button_0.texture_pressed, pressed)
+	var art: Array[Texture2D] = _controls.slot_art(Controls.InputType.KEYBOARD_MOUSE, "button_0")
+	assert_eq(art[0], normal, "and the exports hold the new pair")
+	assert_eq(art[1], pressed)
+	_controls.current_input_type = Controls.InputType.MICROSOFT
+	assert_eq(_controls.joypad_button_0.texture_normal, xbox, "The pad's art is untouched")
 	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
-	_controls.update_input_ui()
-	assert_eq(_controls.joypad_axis_5_plus.texture_normal, load(KEY_ART.path_join("mouse_left_outline.svg")),
-		"the right trigger is drawn as the mouse button that fires it")
+	assert_eq(_controls.joypad_button_0.texture_normal, normal, "and the keyboard art survives a device swap")
 
+
+func test_slot_art_for_another_device_waits_for_it() -> void:
+	_controls = _make_controls()
+	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
+	var before: Texture2D = _controls.joypad_button_0.texture_normal
+	var art: Texture2D = load(KEY_ART.path_join("keyboard_e_outline.svg"))
+	_controls.set_slot_art(Controls.InputType.SONY, "button_0", art, art)
+	assert_eq(_controls.joypad_button_0.texture_normal, before, "Art set for a pad not in hand changes nothing on screen")
 	_controls.current_input_type = Controls.InputType.SONY
-	assert_eq(_controls.joypad_axis_5_plus.texture_normal, _controls.sony_axis_5_plus_normal,
-		"and a pad still gets its own art")
-
-	InputMap.action_erase_event(&"test_fire", event)
-	InputMap.erase_action(&"test_fire")
-
-
-## An action with nothing on the keyboard - a pad-only binding - has no key to draw, so the slot keeps the
-## face its export gave it rather than going blank.
-func test_a_slot_with_no_key_bound_keeps_its_exported_face() -> void:
-	var event := InputEventJoypadButton.new()
-	event.button_index = JOY_BUTTON_LEFT_SHOULDER
-	InputMap.add_action(&"test_pad_only")
-	InputMap.action_add_event(&"test_pad_only", event)
-	_controls = _make_controls({"action_button_9": &"test_pad_only"})
-
-	_controls.current_input_type = Controls.InputType.KEYBOARD_MOUSE
-	_controls.update_input_ui()
-	assert_eq(_controls.joypad_button_9.texture_normal, _controls.keyboard_mouse_button_9_normal)
-
-	InputMap.action_erase_event(&"test_pad_only", event)
-	InputMap.erase_action(&"test_pad_only")
+	assert_eq(_controls.joypad_button_0.texture_normal, art, "and shows once that pad is picked up")
 
 
 func test_input_type_changed_is_emitted() -> void:
