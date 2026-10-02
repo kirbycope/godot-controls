@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Godot Head Base -->
+  <rect x="20" y="36" width="88" height="68" rx="16" fill="#478cbf"/>
+
+  <!-- Left Eye replaced with D-Pad -->
+  <path d="M 44 54 H 50 V 60 H 56 V 66 H 50 V 72 H 44 V 66 H 38 V 60 H 44 Z" fill="#ffffff"/>
+
+  <!-- Right Eye replaced with ABXY Action Button Diamond -->
+  <circle cx="84" cy="55" r="4" fill="#ffffff"/>
+  <circle cx="91" cy="63" r="4" fill="#ffffff"/>
+  <circle cx="84" cy="71" r="4" fill="#ffffff"/>
+  <circle cx="77" cy="63" r="4" fill="#ffffff"/>
+
+  <!-- Bottom Mouth Accent -->
+  <rect x="52" y="82" width="24" height="6" rx="3" fill="#ffffff"/>
+</svg>
